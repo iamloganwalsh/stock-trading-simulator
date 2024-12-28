@@ -3,7 +3,7 @@ package main
 import (
     "log"
     "net/http"
-    "routes"
+    "github.com/iamloganwalsh/stock-trading-simulator/routes"
 )
 
 func main() {

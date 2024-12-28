@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
-	"project/models"
-	"project/utils"
+	"github.com/iamloganwalsh/stock-trading-simulator/models"
+	"github.com/iamloganwalsh/stock-trading-simulator/utils"
 )
 
 var db *sql.DB // Initialize this in your main setup or config package
