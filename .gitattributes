@@ -1,0 +1,4 @@
+# Ensure Go files and module files use LF
+*.go text eol=lf
+go.mod eol=lf
+go.sum eol=lf
