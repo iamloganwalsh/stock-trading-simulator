@@ -1,0 +1,34 @@
+# Ignore Go binary files
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Ignore build artifacts
+*.out
+*.a
+*.o
+*.test
+*.prof
+*.cgo
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Go Modules
+/vendor/
+go.sum
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
