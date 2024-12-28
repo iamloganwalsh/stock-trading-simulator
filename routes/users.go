@@ -6,32 +6,41 @@ import (
 	"net/http"
 	"github.com/iamloganwalsh/stock-trading-simulator/models"
 	"github.com/iamloganwalsh/stock-trading-simulator/utils"
+	"fmt"
 )
 
 var db *sql.DB // Initialize this in your main setup or config package
 
-// RegisterUser handles user registration
+type User struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
+	// Log the incoming request method and URL
+	fmt.Println("Received request:", r.Method, r.URL)
+
+	// Only allow POST requests for registration
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
 
-	var user struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-	}
-	json.NewDecoder(r.Body).Decode(&user)
-
-	hashedPassword := utils.HashPassword(user.Password)
-	err := models.CreateUser(db, user.Username, hashedPassword)
+	// Parse the incoming request body
+	var user User
+	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
-		http.Error(w, "Could not create user", http.StatusInternalServerError)
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("User registered successfully"))
+	// For now, just log the received user data
+	fmt.Println("Received user data:", user)
+
+	// Respond with success (you can modify this to store data in DB later)
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(`{"status": "success"}`))
 }
 
 // LoginUser handles user login
