@@ -12,8 +12,6 @@ import (
 
 
 func main() {
-	config.ConnectToDB()
-	defer config.GetDB().Close()
 
 	http.HandleFunc("/user/register", routes.RegisterUser)
 	http.HandleFunc("/user/login", routes.LoginUser)

@@ -1,35 +1,26 @@
 package config
 
 import (
-    "database/sql"
-    _ "github.com/lib/pq" // PostgreSQL driver
-    "log"
-    "fmt"
+	"database/sql"
+	"log"
+	_ "github.com/mattn/go-sqlite3"
 )
 
-var db *sql.DB
+// ConnectDB initializes and returns a database connection
+func ConnectDB() (*sql.DB, error) {
+    // Open a connection to the SQLite database file
+    db, err := sql.Open("sqlite3", "./user_data.db")
+    if err != nil {
+        log.Printf("Error opening database: %v\n", err)
+        return nil, err
+    }
 
-// ConnectToDB sets up the connection to the PostgreSQL database
-func ConnectToDB() {
-	// Connection string
-	connStr := "user=postgres password=12345 dbname=stock_trading_simulator_db sslmode=disable host=localhost"
-	var err error
-	db, err = sql.Open("postgres", connStr)
-	if err != nil {
-		log.Fatal("Error connecting to the database: ", err)
-	}
+    // Verify the connection to the database
+    if err := db.Ping(); err != nil {
+        log.Printf("Error connecting to the database: %v\n", err)
+        return nil, err
+    }
 
-	// Test the connection
-	err = db.Ping()
-	if err != nil {
-		log.Fatal("Unable to reach the database: ", err)
-	}
-
-	fmt.Println("Successfully connected to the database!")
+    log.Println("Successfully connected to the database.")
+    return db, nil
 }
-
-// GetDB returns the database connection
-func GetDB() *sql.DB {
-	return db
-}
-
