@@ -5,8 +5,6 @@ import (
 	"github.com/iamloganwalsh/stock-trading-simulator/config"
 )
 
-
-
 func InitUser(username string) error {
 	db, err := config.ConnectDB()
 	if err != nil {

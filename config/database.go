@@ -38,21 +38,21 @@ func InitDB(db *sql.DB) error {
 	CREATE TABLE IF NOT EXISTS trade_history (
 		type TEXT NOT NULL,
 		code TEXT NOT NULL,
-		buy_price REAL NOT NULL,
+		invested REAL NOT NULL,
 		sell_price REAL
 	);`
 
 	createStockTableSQL := `
 	CREATE TABLE IF NOT EXISTS stock (
 		code TEXT NOT NULL,
-		buy_price REAL NOT NULL,
+		invested REAL NOT NULL,
 		stock_count REAL NOT NULL
 	);`
 
 	createCryptoTableSQL := `
 	CREATE TABLE IF NOT EXISTS crypto (
 		code TEXT NOT NULL,
-		buy_price REAL NOT NULL,
+		invested REAL NOT NULL,
 		crypto_count REAL NOT NULL
 	);`
 
