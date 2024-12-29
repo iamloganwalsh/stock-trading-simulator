@@ -3,10 +3,11 @@ package routes
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
+
 	"github.com/iamloganwalsh/stock-trading-simulator/models"
 	"github.com/iamloganwalsh/stock-trading-simulator/utils"
-	"fmt"
 )
 
 var db *sql.DB // Initialize this in your main setup or config package
