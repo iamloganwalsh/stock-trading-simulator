@@ -13,6 +13,18 @@ import (
 
 func main() {
 
+	db, err := config.ConnectDB()
+	if err != nil {
+		log.Fatalf("Failed to connect to the database: %v", err)
+	}
+	defer db.Close()
+
+	err = config.InitDB(db)
+	if err != nil {
+		log.Fatalf("Failed to initialize the database: %v", err)
+	}
+	
+
 	http.HandleFunc("/user/register", routes.RegisterUser)
 	http.HandleFunc("/user/login", routes.LoginUser)
 
