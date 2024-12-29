@@ -7,6 +7,9 @@ import (
 	"log"
 	"net/http"
 	"time"
+  
+  "github.com/iamloganwalsh/stock-trading-simulator/routes"
+	"github.com/iamloganwalsh/stock-trading-simulator/config"
 )
 
 // Struct to parse the response for stock quotes
@@ -22,6 +25,20 @@ type StockQuote struct {
 }
 
 func main() {
+  db, err := config.ConnectDB()
+	if err != nil {
+		log.Fatalf("Failed to connect to the database: %v", err)
+	}
+	defer db.Close()
+
+	err = config.InitDB(db)
+	if err != nil {
+		log.Fatalf("Failed to initialize the database: %v", err)
+	}
+  
+  http.HandleFunc("/user/register", routes.RegisterUser)
+	http.HandleFunc("/user/login", routes.LoginUser)
+  
 	// Replace with your actual Finnhub API key
 	apiKey := "ctod401r01qpsuefbs50ctod401r01qpsuefbs5g"
 	symbol := "AAPL" // Example symbol for Apple (AAPL), Microsoft (MSFT), Meta (META)
@@ -65,4 +82,7 @@ func main() {
 	fmt.Printf("Previous Close: $%.2f\n", quote.PreviousClose)
 	timestamp := time.Unix(quote.Timestamp, 0)
 	fmt.Println("Timestamp:", timestamp.Format(time.RFC3339))
+ 
+  log.Println("Starting server on localhost:3000...")
+	log.Fatal(http.ListenAndServe("localhost:3000", nil))
 }
