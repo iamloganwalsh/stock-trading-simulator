@@ -32,3 +32,6 @@ go.sum
 *.log
 *.tmp
 *.swp
+
+# Ignore local database files
+user_data.db
