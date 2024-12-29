@@ -24,7 +24,7 @@ type StockQuote struct {
 func main() {
 	// Replace with your actual Finnhub API key
 	apiKey := "ctod401r01qpsuefbs50ctod401r01qpsuefbs5g"
-	symbol := "APPL" // Example symbol for Apple
+	symbol := "AAPL" // Example symbol for Apple (AAPL), Microsoft (MSFT), Meta (META)
 
 	// Construct the API URL
 	url := fmt.Sprintf("https://finnhub.io/api/v1/quote?symbol=%s&token=%s", symbol, apiKey)
