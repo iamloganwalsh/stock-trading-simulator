@@ -2,27 +2,79 @@ package models
 
 import (
 	"database/sql"
+	"github.com/iamloganwalsh/stock-trading-simulator/config"
 )
 
-type User struct {
-	ID       int
-	Username string
-	Password string
-	Balance  float64
-}
 
-func CreateUser(db *sql.DB, username, password string) error {
-	query := `INSERT INTO users (username, password_hash) VALUES ($1, $2)`
-	_, err := db.Exec(query, username, password)
+
+func InitUser(username string) error {
+	db, err := config.ConnectDB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	query := `INSERT INTO user_data (username, balance, profit_loss) VALUES (?, ?, ?)`
+	_, err = db.Exec(query, username, 0.0, 0.0)
 	return err
 }
 
-func GetUser(db *sql.DB, username string) (*User, error) {
-	var user User
-	query := `SELECT id, username, password_hash, balance FROM users WHERE username=$1`
-	err := db.QueryRow(query, username).Scan(&user.ID, &user.Username, &user.Password, &user.Balance)
+func GetUsername() (string, error) {
+	db, err := config.ConnectDB()
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	return &user, nil
+	defer db.Close()
+
+	var username string
+	query := `SELECT username FROM user_data LIMIT 1` // Should only be 1 entry anyways
+	err = db.QueryRow(query).Scan(&username)
+
+	if err == sql.ErrNoRows {
+		return "", nil // No rows found, should never be possible but who knows
+	} else if err != nil {
+		return "", err // Other errors
+	}
+
+	return username, nil
+}
+
+func GetBalance() (float64, error) {
+	db, err := config.ConnectDB()
+	if err != nil {
+		return 0, err
+	}
+	defer db.Close()
+
+	var balance float64
+	query := `SELECT balance FROM user_data LIMIT 1` // Should only be 1 entry anyways
+	err = db.QueryRow(query).Scan(&balance)
+
+	if err == sql.ErrNoRows {
+		return 0, nil // No rows found, should never be possible but who knows
+	} else if err != nil {
+		return 0, err // Other errors
+	}
+
+	return balance, nil
+}
+
+func GetProfitLoss() (float64, error) {
+	db, err := config.ConnectDB()
+	if err != nil {
+		return 0, err
+	}
+	defer db.Close()
+
+	var profit_loss float64
+	query := `SELECT balance FROM user_data LIMIT 1` // Should only be 1 entry anyways
+	err = db.QueryRow(query).Scan(&profit_loss)
+
+	if err == sql.ErrNoRows {
+		return 0, nil // No rows found, should never be possible but who knows
+	} else if err != nil {
+		return 0, err // Other errors
+	}
+
+	return profit_loss, nil
 }
