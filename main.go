@@ -6,8 +6,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"github.com/joho/godotenv"
 	"time"
-  "github.com/iamloganwalsh/stock-trading-simulator/routes"
 	"github.com/iamloganwalsh/stock-trading-simulator/config"
 )
 
@@ -25,8 +26,9 @@ type StockQuote struct {
 
 func main() {
 
-  db, err := config.ConnectDB()
-  
+	// Database Connect or Init
+	db, err := config.ConnectDB()
+
 	if err != nil {
 		log.Fatalf("Failed to connect to the database: %v", err)
 	}
@@ -36,9 +38,20 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to initialize the database: %v", err)
 	}
-  
-	// Replace with your actual Finnhub API key
-	apiKey := "ctod401r01qpsuefbs50ctod401r01qpsuefbs5g"
+
+	err = godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	apiKey := os.Getenv("API_KEY")
+	if apiKey == "" {
+		fmt.Println("API key is not set")
+		return
+	}
+
+	fmt.Println("API Key: ", apiKey)
+
 	symbol := "AAPL" // Example symbol for Apple (AAPL), Microsoft (MSFT), Meta (META)
 
 	// Construct the API URL
@@ -80,7 +93,7 @@ func main() {
 	fmt.Printf("Previous Close: $%.2f\n", quote.PreviousClose)
 	timestamp := time.Unix(quote.Timestamp, 0)
 	fmt.Println("Timestamp:", timestamp.Format(time.RFC3339))
- 
-  log.Println("Starting server on localhost:3000...")
+
+	log.Println("Starting server on localhost:3000...")
 	log.Fatal(http.ListenAndServe("localhost:3000", nil))
 }

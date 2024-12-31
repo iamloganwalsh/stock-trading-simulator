@@ -35,3 +35,6 @@ go.sum
 
 # Ignore local database files
 user_data.db
+
+# Environment variables
+.env
