@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"time"
-  
   "github.com/iamloganwalsh/stock-trading-simulator/routes"
 	"github.com/iamloganwalsh/stock-trading-simulator/config"
 )
@@ -25,7 +24,9 @@ type StockQuote struct {
 }
 
 func main() {
+
   db, err := config.ConnectDB()
+  
 	if err != nil {
 		log.Fatalf("Failed to connect to the database: %v", err)
 	}
@@ -35,9 +36,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to initialize the database: %v", err)
 	}
-  
-  http.HandleFunc("/user/register", routes.RegisterUser)
-	http.HandleFunc("/user/login", routes.LoginUser)
   
 	// Replace with your actual Finnhub API key
 	apiKey := "ctod401r01qpsuefbs50ctod401r01qpsuefbs5g"
