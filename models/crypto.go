@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-func BuyCrypto(code string, cost float64, cryptoCount float64) error {
+func BuyCrypto(code string, cost float64, crypto_count float64) error {
 	// Start a new transaction
 	db, err := config.ConnectDB()
 	if err != nil {
@@ -29,13 +29,13 @@ func BuyCrypto(code string, cost float64, cryptoCount float64) error {
 	}()
 
 	var invested float64
-	var oldCount float64
+	var old_count float64
 	query := `SELECT invested, crypto_count FROM crypto WHERE code = ?`
-	err = tx.QueryRow(query, code).Scan(&invested, &oldCount)
+	err = tx.QueryRow(query, code).Scan(&invested, &old_count)
 	if err != nil {
 		if err == sql.ErrNoRows { // Add new entry
 			addQuery := `INSERT INTO crypto (code, invested, crypto_count) VALUES (?, ?, ?)`
-			_, err = tx.Exec(addQuery, code, cost, cryptoCount)
+			_, err = tx.Exec(addQuery, code, cost, crypto_count)
 			if err != nil {
 				return err
 			}
@@ -45,18 +45,18 @@ func BuyCrypto(code string, cost float64, cryptoCount float64) error {
 	} else {
 		// Update existing entry
 		updateQuery := `UPDATE crypto SET invested = ?, crypto_count = ? WHERE code = ?`
-		_, err = tx.Exec(updateQuery, invested+cost, cryptoCount+oldCount, code)
+		_, err = tx.Exec(updateQuery, invested+cost, crypto_count+old_count, code)
 		if err != nil {
 			return err
 		}
 	}
 
 	// Double check that user can afford	
-	userBalance, err := GetBalance() // From user.go
+	user_balance, err := GetBalance() // From user.go
 	if err != nil {
 		return err
 	}
-	if userBalance < cost {
+	if user_balance < cost {
 		return fmt.Errorf("user is a brokie")
 	}
 	
@@ -71,7 +71,7 @@ func BuyCrypto(code string, cost float64, cryptoCount float64) error {
 }
 
 
-func SellCrypto(code string, price float64, sellQuantity float64) error {
+func SellCrypto(code string, price float64, sell_quantity float64) error {
     db, err := config.ConnectDB()
     if err != nil {
         return err
@@ -95,9 +95,9 @@ func SellCrypto(code string, price float64, sellQuantity float64) error {
     }()
 
     var invested float64
-    var cryptoCount float64
+    var crypto_count float64
     cryptoInfoQuery := `SELECT invested, crypto_count FROM crypto WHERE code = ?`
-    err = tx.QueryRow(cryptoInfoQuery, code).Scan(&invested, &cryptoCount)
+    err = tx.QueryRow(cryptoInfoQuery, code).Scan(&invested, &crypto_count)
     if err != nil {
         if err == sql.ErrNoRows {
             return fmt.Errorf("user does not own specified crypto")
@@ -105,15 +105,15 @@ func SellCrypto(code string, price float64, sellQuantity float64) error {
         return err
     }
 
-    if sellQuantity > cryptoCount {
-        return fmt.Errorf("user does not own that much crypto; current amount owned: %.6f", cryptoCount)
+    if sell_quantity > crypto_count {
+        return fmt.Errorf("user does not own that much crypto; current amount owned: %.6f", crypto_count)
     }
 
     // Calculate new crypto count and invested amount
-    newCryptoCount := cryptoCount - sellQuantity
-    newInvested := invested * (newCryptoCount / cryptoCount)
+    new_crypto_count := crypto_count - sell_quantity
+    new_invested := invested * (new_crypto_count / crypto_count)
 
-    if newCryptoCount == 0 {
+    if new_crypto_count == 0 {
         // Delete the crypto entry if the new count is zero
         deleteCryptoQuery := `DELETE FROM crypto WHERE code = ?`
         _, err = tx.Exec(deleteCryptoQuery, code)
@@ -123,7 +123,7 @@ func SellCrypto(code string, price float64, sellQuantity float64) error {
     } else {
         // Update crypto holdings
         updateCryptoQuery := `UPDATE crypto SET invested = ?, crypto_count = ? WHERE code = ?`
-        _, err = tx.Exec(updateCryptoQuery, newInvested, newCryptoCount, code)
+        _, err = tx.Exec(updateCryptoQuery, new_invested, new_crypto_count, code)
         if err != nil {
             return err
         }
@@ -138,3 +138,4 @@ func SellCrypto(code string, price float64, sellQuantity float64) error {
 
     return nil
 }
+
