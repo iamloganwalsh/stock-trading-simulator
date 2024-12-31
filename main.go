@@ -50,8 +50,6 @@ func main() {
 		return
 	}
 
-	fmt.Println("API Key: ", apiKey)
-
 	symbol := "AAPL" // Example symbol for Apple (AAPL), Microsoft (MSFT), Meta (META)
 
 	// Construct the API URL
