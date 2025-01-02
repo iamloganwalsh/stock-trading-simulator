@@ -96,13 +96,21 @@ func main() {
 	fmt.Println("Timestamp:", timestamp.Format(time.RFC3339))
 
 	router := mux.NewRouter()
+
+	// User routes
 	router.HandleFunc("/user/create", routes.InitUserHandler).Methods("POST")
 	router.HandleFunc("/user/username", routes.GetUsernameHandler).Methods("GET")
-
-	// test these
 	router.HandleFunc("/user/balance", routes.GetBalanceHandler).Methods("GET")
 	router.HandleFunc("/user/profit_loss", routes.GetProfitLossHandler).Methods("GET")
+
+	// Trade routes (Crypto & Stock)
+	router.HandleFunc("/crypto/buy", routes.BuyCryptoHandler).Methods("POST")
+	router.HandleFunc("/crypto/sell", routes.SellCryptoHandler).Methods("POST") // Could DELETE or UPDATE so POST for versatility
+	router.HandleFunc("/stock/buy", routes.BuyStockHandler).Methods("POST")
+	router.HandleFunc("/stock/sell", routes.SellStockHandler).Methods("POST") // Could DELETE or UPDATE so POST for versatility
 
 	log.Println("Starting server on localhost:3000...")
 	log.Fatal(http.ListenAndServe("localhost:3000", router))
 }
+
+

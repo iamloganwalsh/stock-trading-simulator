@@ -23,13 +23,13 @@ func InitUserHandler(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&userReq)
 	if err != nil {
-		http.Error(w, "Bad Request: "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "Bad Request: " + err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	err = models.InitUser(userReq.Username)
 	if err != nil {
-		http.Error(w, "Internal server error: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Internal server error: " + err.Error(), http.StatusInternalServerError)
 		return
 	}
 
