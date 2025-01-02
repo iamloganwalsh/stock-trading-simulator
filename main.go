@@ -7,9 +7,12 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"github.com/joho/godotenv"
 	"time"
+
+	"github.com/gorilla/mux"
 	"github.com/iamloganwalsh/stock-trading-simulator/config"
+	"github.com/iamloganwalsh/stock-trading-simulator/routes"
+	"github.com/joho/godotenv"
 )
 
 // Struct to parse the response for stock quotes
@@ -92,6 +95,14 @@ func main() {
 	timestamp := time.Unix(quote.Timestamp, 0)
 	fmt.Println("Timestamp:", timestamp.Format(time.RFC3339))
 
+	router := mux.NewRouter()
+	router.HandleFunc("/user/create", routes.InitUserHandler).Methods("POST")
+	router.HandleFunc("/user/username", routes.GetUsernameHandler).Methods("GET")
+
+	// test these
+	router.HandleFunc("/user/balance", routes.GetBalanceHandler).Methods("GET")
+	router.HandleFunc("/user/profit_loss", routes.GetProfitLossHandler).Methods("GET")
+
 	log.Println("Starting server on localhost:3000...")
-	log.Fatal(http.ListenAndServe("localhost:3000", nil))
+	log.Fatal(http.ListenAndServe("localhost:3000", router))
 }

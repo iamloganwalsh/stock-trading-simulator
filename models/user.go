@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+
 	"github.com/iamloganwalsh/stock-trading-simulator/config"
 )
 
@@ -65,7 +66,7 @@ func GetProfitLoss() (float64, error) {
 	defer db.Close()
 
 	var profit_loss float64
-	query := `SELECT balance FROM user_data LIMIT 1` // Should only be 1 entry anyways
+	query := `SELECT profit_loss FROM user_data LIMIT 1` // Should only be 1 entry anyways
 	err = db.QueryRow(query).Scan(&profit_loss)
 
 	if err == sql.ErrNoRows {

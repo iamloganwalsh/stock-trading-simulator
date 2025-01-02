@@ -22,7 +22,8 @@ func ConnectDB() (*sql.DB, error) {
 		return nil, err
 	}
 
-	log.Println("Successfully connected to the database.")
+	//log.Println("Successfully connected to the database.")
+	// The above line shows up every time we connect for each function, so I'm commenting it out for now
 	return db, nil
 }
 
