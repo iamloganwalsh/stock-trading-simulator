@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"github.com/joho/godotenv"
 )
 
 // Struct to parse the response for stock quotes
@@ -23,6 +24,12 @@ type StockQuote struct {
 }
 
 func Fetch_api() {
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	apiKey := os.Getenv("API_KEY")
 	if apiKey == "" {
 		fmt.Println("API key is not set")
