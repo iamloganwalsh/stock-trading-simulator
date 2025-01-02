@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"encoding/json"
@@ -8,12 +8,6 @@ import (
 	"net/http"
 	"os"
 	"time"
-
-	"github.com/gorilla/mux"
-	"github.com/iamloganwalsh/stock-trading-simulator/config"
-	"github.com/iamloganwalsh/stock-trading-simulator/routes"
-	//"github.com/iamloganwalsh/stock-trading-simulator/utils"
-	"github.com/joho/godotenv"
 )
 
 // Struct to parse the response for stock quotes
@@ -28,26 +22,7 @@ type StockQuote struct {
 	Timestamp        int64   `json:"t"` // Unix timestamp
 }
 
-func main() {
-
-	// Database Connect or Init
-	db, err := config.ConnectDB()
-
-	if err != nil {
-		log.Fatalf("Failed to connect to the database: %v", err)
-	}
-	defer db.Close()
-
-	err = config.InitDB(db)
-	if err != nil {
-		log.Fatalf("Failed to initialize the database: %v", err)
-	}
-
-	err = godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
+func Fetch_api() {
 	apiKey := os.Getenv("API_KEY")
 	if apiKey == "" {
 		fmt.Println("API key is not set")
@@ -95,23 +70,4 @@ func main() {
 	fmt.Printf("Previous Close: $%.2f\n", quote.PreviousClose)
 	timestamp := time.Unix(quote.Timestamp, 0)
 	fmt.Println("Timestamp:", timestamp.Format(time.RFC3339))
-
-	router := mux.NewRouter()
-
-	// User routes
-	router.HandleFunc("/user/create", routes.InitUserHandler).Methods("POST")
-	router.HandleFunc("/user/username", routes.GetUsernameHandler).Methods("GET")
-	router.HandleFunc("/user/balance", routes.GetBalanceHandler).Methods("GET")
-	router.HandleFunc("/user/profit_loss", routes.GetProfitLossHandler).Methods("GET")
-
-	// Trade routes (Crypto & Stock)
-	router.HandleFunc("/crypto/buy", routes.BuyCryptoHandler).Methods("POST")
-	router.HandleFunc("/crypto/sell", routes.SellCryptoHandler).Methods("POST") // Could DELETE or UPDATE so POST for versatility
-	router.HandleFunc("/stock/buy", routes.BuyStockHandler).Methods("POST")
-	router.HandleFunc("/stock/sell", routes.SellStockHandler).Methods("POST") // Could DELETE or UPDATE so POST for versatility
-
-	log.Println("Starting server on localhost:3000...")
-	log.Fatal(http.ListenAndServe("localhost:3000", router))
 }
-
-
