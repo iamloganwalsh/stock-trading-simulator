@@ -23,13 +23,13 @@ func InitUserHandler(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&userReq)
 	if err != nil {
-		http.Error(w, "Bad Request: " + err.Error(), http.StatusBadRequest)
+		http.Error(w, "Bad Request: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	err = models.InitUser(userReq.Username)
 	if err != nil {
-		http.Error(w, "Internal server error: " + err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Internal server error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -99,4 +99,52 @@ func GetProfitLossHandler(w http.ResponseWriter, r *http.Request) {
 	if _, err := w.Write([]byte(profit_loss_string)); err != nil {
 		http.Error(w, "Failed to write response: "+err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func GetCryptoPortfolioHandler(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method should be GET", http.StatusMethodNotAllowed)
+		return
+	}
+
+	crypto_items, err := models.GetCryptoPortfolio()
+	if err != nil {
+		http.Error(w, "Internal server error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	json_data, err := json.Marshal(crypto_items)
+	if err != nil {
+		http.Error(w, "Failed to encode data", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(json_data)
+}
+
+func GetStockPortfolioHandler(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method should be GET", http.StatusMethodNotAllowed)
+		return
+	}
+
+	stock_items, err := models.GetStockPortfolio()
+	if err != nil {
+		http.Error(w, "Internal server error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	json_data, err := json.Marshal(stock_items)
+	if err != nil {
+		http.Error(w, "Failed to encode data", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(json_data)
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+
 	"github.com/gorilla/mux"
 	"github.com/iamloganwalsh/stock-trading-simulator/config"
 	"github.com/iamloganwalsh/stock-trading-simulator/routes"
@@ -36,7 +37,6 @@ func main() {
 		log.Fatalf("Failed to initialize the database: %v", err)
 	}
 
-	
 	router := mux.NewRouter()
 
 	// User routes
@@ -44,6 +44,8 @@ func main() {
 	router.HandleFunc("/user/username", routes.GetUsernameHandler).Methods("GET")
 	router.HandleFunc("/user/balance", routes.GetBalanceHandler).Methods("GET")
 	router.HandleFunc("/user/profit_loss", routes.GetProfitLossHandler).Methods("GET")
+	router.HandleFunc("/user/crypto_portfolio", routes.GetCryptoPortfolioHandler).Methods("GET")
+	router.HandleFunc("/user/stock_portfolio", routes.GetStockPortfolioHandler).Methods("GET")
 
 	// Trade routes (Crypto & Stock)
 	router.HandleFunc("/crypto/buy", routes.BuyCryptoHandler).Methods("POST")
@@ -54,5 +56,3 @@ func main() {
 	log.Println("Starting server on localhost:3000...")
 	log.Fatal(http.ListenAndServe("localhost:3000", router))
 }
-
-
