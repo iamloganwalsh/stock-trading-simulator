@@ -3,18 +3,11 @@ package models
 import (
 	"database/sql"
 	"fmt"
-
-	"github.com/iamloganwalsh/stock-trading-simulator/config"
 )
 
-func BuyCrypto(code string, cost float64, crypto_count float64) error {
+func BuyCrypto(db *sql.DB, code string, cost float64, crypto_count float64) error {
 	// Start a new transaction
 	cost *= crypto_count
-	db, err := config.ConnectDB()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
 
 	tx, err := db.Begin()
 	if err != nil {
@@ -54,7 +47,7 @@ func BuyCrypto(code string, cost float64, crypto_count float64) error {
 	}
 
 	// Double check that user can afford
-	user_balance, err := GetBalance() // From user.go
+	user_balance, err := GetBalance(db) // From user.go
 	if err != nil {
 		return err
 	}
@@ -72,12 +65,7 @@ func BuyCrypto(code string, cost float64, crypto_count float64) error {
 	return nil
 }
 
-func SellCrypto(code string, price float64, sell_quantity float64) error {
-	db, err := config.ConnectDB()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
+func SellCrypto(db *sql.DB, code string, price float64, sell_quantity float64) error {
 
 	// Start a new transaction
 	tx, err := db.Begin()

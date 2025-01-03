@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/iamloganwalsh/stock-trading-simulator/config"
 	"github.com/iamloganwalsh/stock-trading-simulator/models"
 )
 
@@ -27,7 +28,9 @@ func InitUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = models.InitUser(userReq.Username)
+	db, _ := config.ConnectDB()
+
+	err = models.InitUser(db, userReq.Username)
 	if err != nil {
 		http.Error(w, "Internal server error: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -43,8 +46,8 @@ func GetUsernameHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method should be GET", http.StatusMethodNotAllowed)
 		return
 	}
-
-	username, err := models.GetUsername()
+	db, _ := config.ConnectDB()
+	username, err := models.GetUsername(db)
 	if err != nil {
 		http.Error(w, "Internal server error: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -63,8 +66,8 @@ func GetBalanceHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method should be GET", http.StatusMethodNotAllowed)
 		return
 	}
-
-	balance, err := models.GetBalance()
+	db, _ := config.ConnectDB()
+	balance, err := models.GetBalance(db)
 	if err != nil {
 		http.Error(w, "Internal server error: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -85,8 +88,8 @@ func GetProfitLossHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method should be GET", http.StatusMethodNotAllowed)
 		return
 	}
-
-	profit_loss, err := models.GetProfitLoss()
+	db, _ := config.ConnectDB()
+	profit_loss, err := models.GetProfitLoss(db)
 	if err != nil {
 		http.Error(w, "Internal server error: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -107,8 +110,8 @@ func GetCryptoPortfolioHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method should be GET", http.StatusMethodNotAllowed)
 		return
 	}
-
-	crypto_items, err := models.GetCryptoPortfolio()
+	db, _ := config.ConnectDB()
+	crypto_items, err := models.GetCryptoPortfolio(db)
 	if err != nil {
 		http.Error(w, "Internal server error: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -131,8 +134,8 @@ func GetStockPortfolioHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method should be GET", http.StatusMethodNotAllowed)
 		return
 	}
-
-	stock_items, err := models.GetStockPortfolio()
+	db, _ := config.ConnectDB()
+	stock_items, err := models.GetStockPortfolio(db)
 	if err != nil {
 		http.Error(w, "Internal server error: "+err.Error(), http.StatusInternalServerError)
 		return

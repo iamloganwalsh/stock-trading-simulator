@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/iamloganwalsh/stock-trading-simulator/config"
 	"github.com/iamloganwalsh/stock-trading-simulator/models"
 )
 
@@ -28,7 +29,9 @@ func BuyCryptoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = models.BuyCrypto(userReq.Code, userReq.Cost, userReq.Amount)
+	db, _ := config.ConnectDB()
+
+	err = models.BuyCrypto(db, userReq.Code, userReq.Cost, userReq.Amount)
 	if err != nil {
 		http.Error(w, "Internal server error: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -59,7 +62,9 @@ func SellCryptoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = models.SellCrypto(userReq.Code, userReq.Cost, userReq.Amount)
+	db, _ := config.ConnectDB()
+
+	err = models.SellCrypto(db, userReq.Code, userReq.Cost, userReq.Amount)
 	if err != nil {
 		http.Error(w, "Internal server error: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -90,7 +95,9 @@ func BuyStockHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = models.BuyStock(userReq.Code, userReq.Cost, userReq.Amount)
+	db, _ := config.ConnectDB()
+
+	err = models.BuyStock(db, userReq.Code, userReq.Cost, userReq.Amount)
 	if err != nil {
 		http.Error(w, "Internal server error: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -121,7 +128,9 @@ func SellStockHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = models.SellStock(userReq.Code, userReq.Cost, userReq.Amount)
+	db, _ := config.ConnectDB()
+
+	err = models.SellStock(db, userReq.Code, userReq.Cost, userReq.Amount)
 	if err != nil {
 		http.Error(w, "Internal server error: "+err.Error(), http.StatusInternalServerError)
 		return

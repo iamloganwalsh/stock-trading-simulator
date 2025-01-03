@@ -3,31 +3,20 @@ package models
 import (
 	"database/sql"
 
-	"github.com/iamloganwalsh/stock-trading-simulator/config"
 )
 
-func InitUser(username string) error {
-	db, err := config.ConnectDB()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
+func InitUser(db *sql.DB, username string) error {
 
 	query := `INSERT INTO user_data (username, balance, profit_loss) VALUES (?, ?, ?)`
-	_, err = db.Exec(query, username, 0.0, 0.0)
+	_, err := db.Exec(query, username, 0.0, 0.0)
 	return err
 }
 
-func GetUsername() (string, error) {
-	db, err := config.ConnectDB()
-	if err != nil {
-		return "", err
-	}
-	defer db.Close()
+func GetUsername(db *sql.DB) (string, error) {
 
 	var username string
 	query := `SELECT username FROM user_data LIMIT 1` // Should only be 1 entry anyways
-	err = db.QueryRow(query).Scan(&username)
+	err := db.QueryRow(query).Scan(&username)
 
 	if err == sql.ErrNoRows {
 		return "", nil // No rows found, should never be possible but who knows
@@ -38,16 +27,11 @@ func GetUsername() (string, error) {
 	return username, nil
 }
 
-func GetBalance() (float64, error) {
-	db, err := config.ConnectDB()
-	if err != nil {
-		return 0, err
-	}
-	defer db.Close()
+func GetBalance(db *sql.DB) (float64, error) {
 
 	var balance float64
 	query := `SELECT balance FROM user_data LIMIT 1` // Should only be 1 entry anyways
-	err = db.QueryRow(query).Scan(&balance)
+	err := db.QueryRow(query).Scan(&balance)
 
 	if err == sql.ErrNoRows {
 		return 0, nil // No rows found, should never be possible but who knows
@@ -58,16 +42,11 @@ func GetBalance() (float64, error) {
 	return balance, nil
 }
 
-func GetProfitLoss() (float64, error) {
-	db, err := config.ConnectDB()
-	if err != nil {
-		return 0, err
-	}
-	defer db.Close()
+func GetProfitLoss(db *sql.DB) (float64, error) {
 
 	var profit_loss float64
 	query := `SELECT profit_loss FROM user_data LIMIT 1` // Should only be 1 entry anyways
-	err = db.QueryRow(query).Scan(&profit_loss)
+	err := db.QueryRow(query).Scan(&profit_loss)
 
 	if err == sql.ErrNoRows {
 		return 0, nil // No rows found, should never be possible but who knows
@@ -84,14 +63,8 @@ type CryptoData struct {
 	Crypto_count float64 `json:"crypto_count"`
 }
 
-func GetCryptoPortfolio() ([]CryptoData, error) {
+func GetCryptoPortfolio(db *sql.DB) ([]CryptoData, error) {
 	var crypto_items []CryptoData
-
-	db, err := config.ConnectDB()
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
 
 	rows, err := db.Query("SELECT code, invested, crypto_count FROM crypto")
 	if err != nil {
@@ -122,14 +95,8 @@ type StockData struct {
 	Stock_count float64 `json:"stock_count"`
 }
 
-func GetStockPortfolio() ([]StockData, error) {
+func GetStockPortfolio(db *sql.DB) ([]StockData, error) {
 	var stock_items []StockData
-
-	db, err := config.ConnectDB()
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
 
 	rows, err := db.Query("SELECT code, invested, stock_count FROM stock")
 	if err != nil {
