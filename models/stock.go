@@ -3,7 +3,6 @@ package models
 import (
 	"database/sql"
 	"fmt"
-
 )
 
 func BuyStock(db *sql.DB, code string, cost float64, stock_count float64) error {
@@ -23,6 +22,15 @@ func BuyStock(db *sql.DB, code string, cost float64, stock_count float64) error 
 			err = tx.Commit()
 		}
 	}()
+
+	// Check that user can afford
+	user_balance, err := GetBalance(db) // From user.go
+	if err != nil {
+		return err
+	}
+	if user_balance < cost {
+		return fmt.Errorf("insufficient funds")
+	}
 
 	var invested float64
 	var old_count float64
@@ -45,15 +53,6 @@ func BuyStock(db *sql.DB, code string, cost float64, stock_count float64) error 
 		if err != nil {
 			return err
 		}
-	}
-
-	// Double check that user can afford
-	user_balance, err := GetBalance(db) // From user.go
-	if err != nil {
-		return err
-	}
-	if user_balance < cost {
-		return fmt.Errorf("user is a brokie")
 	}
 
 	// Update user balance

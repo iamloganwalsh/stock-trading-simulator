@@ -23,6 +23,15 @@ func BuyCrypto(db *sql.DB, code string, cost float64, crypto_count float64) erro
 		}
 	}()
 
+	// Check that user can afford
+	user_balance, err := GetBalance(db) // From user.go
+	if err != nil {
+		return err
+	}
+	if user_balance < cost {
+		return fmt.Errorf("insufficient funds")
+	}
+
 	var invested float64
 	var old_count float64
 	query := `SELECT invested, crypto_count FROM crypto WHERE code = ?`
@@ -44,15 +53,6 @@ func BuyCrypto(db *sql.DB, code string, cost float64, crypto_count float64) erro
 		if err != nil {
 			return err
 		}
-	}
-
-	// Double check that user can afford
-	user_balance, err := GetBalance(db) // From user.go
-	if err != nil {
-		return err
-	}
-	if user_balance < cost {
-		return fmt.Errorf("user is a brokie")
 	}
 
 	// Update user balance
