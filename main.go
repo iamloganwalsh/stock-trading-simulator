@@ -1,10 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/iamloganwalsh/stock-trading-simulator/config"
+	"github.com/iamloganwalsh/stock-trading-simulator/utils"
+
 	//"github.com/iamloganwalsh/stock-trading-simulator/utils"
 	"github.com/joho/godotenv"
 )
@@ -42,6 +45,20 @@ func main() {
 	}
 
 	//utils.Fetch_api()
+
+	stockPrice, err := utils.Fetch_api("AAPL")
+	if err != nil {
+		fmt.Println("Error fetching stock data:", err)
+	} else {
+		fmt.Printf("Current stock price of AAPL: $%2.f\n", stockPrice)
+	}
+
+	cryptoPrice, err := utils.Fetch_api("BINANCE:BTCUSDT")
+	if err != nil {
+		fmt.Println("Error fetching crypto data:", err)
+	} else {
+		fmt.Printf("Current crypto price of BTC/USDT: $%2.f\n", cryptoPrice)
+	}
 
 	log.Println("Starting server on localhost:3000...")
 	log.Fatal(http.ListenAndServe("localhost:3000", nil))

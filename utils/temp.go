@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
+	//"time"
 )
 
 // Struct to parse the response for stock quotes
@@ -22,14 +22,11 @@ type StockQuote struct {
 	Timestamp        int64   `json:"t"` // Unix timestamp
 }
 
-func Fetch_api() {
+func Fetch_api(symbol string) (float64, error) {
 	apiKey := os.Getenv("API_KEY")
 	if apiKey == "" {
-		fmt.Println("API key is not set")
-		return
+		return 0, fmt.Errorf("API key is not set")
 	}
-
-	symbol := "AAPL" // Example symbol for Apple (AAPL), Microsoft (MSFT), Meta (META)
 
 	// Construct the API URL
 	url := fmt.Sprintf("https://finnhub.io/api/v1/quote?symbol=%s&token=%s", symbol, apiKey)
@@ -60,14 +57,17 @@ func Fetch_api() {
 	}
 
 	// Print the stock quote details
-	fmt.Printf("Stock Quote for %s:\n", symbol)
-	fmt.Printf("Current Price: $%.2f\n", quote.CurrentPrice)
-	fmt.Printf("Change: $%.2f\n", quote.Change)
-	fmt.Printf("Percentage Change: %.2f%%\n", quote.PercentageChange)
-	fmt.Printf("High Price: $%.2f\n", quote.High)
-	fmt.Printf("Low Price: $%.2f\n", quote.Low)
-	fmt.Printf("Open Price: $%.2f\n", quote.Open)
-	fmt.Printf("Previous Close: $%.2f\n", quote.PreviousClose)
-	timestamp := time.Unix(quote.Timestamp, 0)
-	fmt.Println("Timestamp:", timestamp.Format(time.RFC3339))
+	//fmt.Printf("Stock Quote for %s:\n", symbol)
+	//fmt.Printf("Current Price: $%.2f\n", quote.CurrentPrice)
+	//fmt.Printf("Change: $%.2f\n", quote.Change)
+	//fmt.Printf("Percentage Change: %.2f%%\n", quote.PercentageChange)
+	//fmt.Printf("High Price: $%.2f\n", quote.High)
+	//fmt.Printf("Low Price: $%.2f\n", quote.Low)
+	//fmt.Printf("Open Price: $%.2f\n", quote.Open)
+	//fmt.Printf("Previous Close: $%.2f\n", quote.PreviousClose)
+	//timestamp := time.Unix(quote.Timestamp, 0)
+	//fmt.Println("Timestamp:", timestamp.Format(time.RFC3339))
+
+	// Returning only the stock price for database calculating the profit gain and loss
+	return quote.CurrentPrice, nil
 }
