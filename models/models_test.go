@@ -26,10 +26,11 @@ func TestMain(m *testing.M) {
 	code := m.Run()
 
 	testDB.Close()
-	//os.Remove("./tests.db")
+	os.Remove("./tests.db")
 	os.Exit(code)
 }
 
+// user.go
 func TestInitUser(t *testing.T) {
 
 	username := "test_username"
@@ -116,6 +117,7 @@ func TestGetStockPortfolio1(t *testing.T) {
 	assert.EqualValues(t, expected, stock_items, "Stock data should not exist currently")
 }
 
+// crypto.go
 func TestBuyCrypto(t *testing.T) {
 	err := BuyCrypto(testDB, "TEST", 10, 5)
 
@@ -129,7 +131,7 @@ func TestBuyCrypto(t *testing.T) {
 		t.Fatalf("Crypto purchased with insufficient funds")
 	}
 
-	// Give User money
+	// Give user money
 	testDB.Exec(`UPDATE user_data SET balance = 100 WHERE rowid = 1`)
 
 	// Attempt purchase again
@@ -164,5 +166,93 @@ func TestBuyCrypto(t *testing.T) {
 
 	if crypto_data.CryptoCount != 5 {
 		t.Fatalf("Incorrect crypto count. Expected 5, Got %f", crypto_data.CryptoCount)
+	}
+
+	// Purchasing more should add to existing entry
+	_, err = testDB.Exec(`UPDATE user_data SET balance = balance + 20 WHERE rowid = 1`)
+	if err != nil {
+		t.Fatalf("Error updating user balance: %v", err)
+	}
+	err = BuyCrypto(testDB, "TEST", 10, 2)
+	if err != nil {
+		t.Fatalf("Error purchasing crypto: %v", err)
+	}
+
+	// Test database entry
+	err = testDB.QueryRow(`SELECT crypto_count FROM crypto WHERE code = "TEST"`).Scan(&crypto_data.CryptoCount)
+	if err != nil {
+		t.Fatalf("Error retrieving crypto count: %v", err)
+	}
+	assert.Equal(t, float64(7), crypto_data.CryptoCount, "Second purchase not update crypto count correctly")
+}
+
+func TestSellCrypto(t *testing.T) {
+	// Sell non existant crypto
+	err := SellCrypto(testDB, "FAKE", 10, 5)
+	if err == nil {
+		t.Fatalf("Crypto should not exist")
+	}
+
+	// Test user balance is still 50
+	var user_balance float64
+	err = testDB.QueryRow(`SELECT balance FROM user_data`).Scan(&user_balance)
+	if err != nil {
+		t.Fatalf("Error retrieving user balance: %v", err)
+	}
+	assert.Equal(t, float64(50), user_balance, "Incorrect balance")
+
+	err = SellCrypto(testDB, "TEST", 10, 4) // Sell 4 crypto for 10 each
+	if err != nil {
+		t.Fatalf("Error selling crypto: %v", err)
+	}
+
+	// Test user balance is now 70
+	err = testDB.QueryRow(`SELECT balance FROM user_data`).Scan(&user_balance)
+	if err != nil {
+		t.Fatalf("Error retrieving user balance: %v", err)
+	}
+	assert.Equal(t, float64(90), user_balance, "Incorrect balance")
+
+	// Test 2 tokens were deducted
+	var crypto_count float64
+	err = testDB.QueryRow(`SELECT crypto_count FROM crypto WHERE code == "TEST"`).Scan(&crypto_count)
+	if err != nil {
+		t.Fatalf("Error retrieving crypto count: %v", err)
+	}
+	assert.Equal(t, float64(3), crypto_count, "Incorrect crypto count")
+
+	// Test selling too many tokens
+	err = SellCrypto(testDB, "TEST", 10, 4)
+	if err == nil {
+		t.Fatalf("Sold more crypto than owned. Owned 3, successfuly sold 4.")
+	}
+
+	// Make sure balance and crypto count doesnt change
+	err = testDB.QueryRow(`SELECT balance FROM user_data`).Scan(&user_balance)
+	if err != nil {
+		t.Fatalf("Error retrieving user balance: %v", err)
+	}
+	assert.Equal(t, float64(90), user_balance, "Incorrect balance")
+	err = testDB.QueryRow(`SELECT crypto_count FROM crypto WHERE code == "TEST"`).Scan(&crypto_count)
+	if err != nil {
+		t.Fatalf("Error retrieving crypto count: %v", err)
+	}
+	assert.Equal(t, float64(3), crypto_count, "Incorrect crypto count")
+
+	// Test selling all and deleting from database
+	err = SellCrypto(testDB, "TEST", 10, 3)
+	if err != nil {
+		t.Fatalf("Error selling crypto: %v", err)
+	}
+
+	// Make sure database correctly updated
+	err = testDB.QueryRow(`SELECT balance FROM user_data`).Scan(&user_balance)
+	if err != nil {
+		t.Fatalf("Error retrieving user balance: %v", err)
+	}
+	assert.Equal(t, float64(120), user_balance, "Incorrect balance")
+	err = testDB.QueryRow(`SELECT crypto_count FROM crypto WHERE code == "TEST"`).Scan(&crypto_count)
+	if err != sql.ErrNoRows {
+		t.Fatalf("Database entry not deleted: %v", err)
 	}
 }
