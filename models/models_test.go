@@ -81,8 +81,7 @@ func TestGetProfitLoss(t *testing.T) {
 	assert.Equal(t, float64(0), profit_loss, "Profit Loss should be 0")
 }
 
-// Test with no crypto entries
-func TestGetCryptoPortfolio1(t *testing.T) {
+func TestGetCryptoPortfolio(t *testing.T) {
 
 	type CryptoData struct {
 		Code         string  `json:"code"`
@@ -94,13 +93,28 @@ func TestGetCryptoPortfolio1(t *testing.T) {
 
 	crypto_items, err := GetCryptoPortfolio(testDB)
 	if err != nil {
-		t.Fatalf("Failed to retrieve crypto portfolio (1): %v", err)
+		t.Fatalf("Failed to retrieve crypto portfolio: %v", err)
 	}
 	assert.EqualValues(t, expected, crypto_items, "Crypto data should not exist currently")
+
+	testDB.Exec("INSERT INTO crypto (code, invested, crypto_count) VALUES (?, ?, ?)", "TEST1", 100, 20)
+	testDB.Exec("INSERT INTO crypto (code, invested, crypto_count) VALUES (?, ?, ?)", "TEST2", 50, 10)
+
+	crypto_items, err = GetCryptoPortfolio(testDB)
+	if err != nil {
+		t.Fatalf("Failed to retrieve crypto portfolio: %v", err)
+	}
+
+	expected = []CryptoData{
+		{Code: "TEST1", Invested: 100, Crypto_count: 20},
+		{Code: "TEST2", Invested: 50, Crypto_count: 10},
+	}
+
+	assert.EqualValues(t, expected, crypto_items, "Crypto data does not match expected values")
+
 }
 
-// Test with no stock entries
-func TestGetStockPortfolio1(t *testing.T) {
+func TestGetStockPortfolio(t *testing.T) {
 
 	type StockData struct {
 		Code        string  `json:"code"`
@@ -112,17 +126,39 @@ func TestGetStockPortfolio1(t *testing.T) {
 
 	stock_items, err := GetStockPortfolio(testDB)
 	if err != nil {
-		t.Fatalf("Failed to retrieve stock portfolio (1): %v", err)
+		t.Fatalf("Failed to retrieve stock portfolio: %v", err)
 	}
 	assert.EqualValues(t, expected, stock_items, "Stock data should not exist currently")
+
+	testDB.Exec("INSERT INTO stock (code, invested, stock_count) VALUES (?, ?, ?)", "TEST1", 100, 20)
+	testDB.Exec("INSERT INTO stock (code, invested, stock_count) VALUES (?, ?, ?)", "TEST2", 50, 10)
+
+	stock_items, err = GetStockPortfolio(testDB)
+	if err != nil {
+		t.Fatalf("Failed to retrieve stock portfolio: %v", err)
+	}
+
+	expected = []StockData{
+		{Code: "TEST1", Invested: 100, Stock_count: 20},
+		{Code: "TEST2", Invested: 50, Stock_count: 10},
+	}
+
+	assert.EqualValues(t, expected, stock_items, "Stock data does not match expected values")
+
 }
 
 // crypto.go
 func TestBuyCrypto(t *testing.T) {
+
+	// Set balance to 0
+	testDB.Exec(`UPDATE user_data SET balance = 0 WHERE rowid = 1`)
+
 	err := BuyCrypto(testDB, "TEST", 10, 5)
 
 	// User has no money so the first one should fail
-	assert.Equal(t, "insufficient funds", err.Error(), "User should have 0 balance")
+	if err == nil {
+		t.Fatalf("User purchased crypto without funds")
+	}
 
 	// Make sure no crypto was added
 	var count int
@@ -252,6 +288,152 @@ func TestSellCrypto(t *testing.T) {
 	}
 	assert.Equal(t, float64(120), user_balance, "Incorrect balance")
 	err = testDB.QueryRow(`SELECT crypto_count FROM crypto WHERE code == "TEST"`).Scan(&crypto_count)
+	if err != sql.ErrNoRows {
+		t.Fatalf("Database entry not deleted: %v", err)
+	}
+}
+
+// stock.go
+func TestBuyStock(t *testing.T) {
+
+	// Set balance to 0
+	testDB.Exec(`UPDATE user_data SET balance = 0 WHERE rowid = 1`)
+
+	err := BuyStock(testDB, "TEST", 10, 5)
+
+	// User has no money so the first one should fail
+	if err == nil {
+		t.Fatalf("User purchased stock without funds")
+	}
+
+	// Make sure no stock was added
+	var count int
+	testDB.QueryRow(`SELECT COUNT(*) FROM stock WHERE code = TEST`).Scan(&count)
+	if count != 0 {
+		t.Fatalf("Stock purchased with insufficient funds")
+	}
+
+	// Give user money
+	testDB.Exec(`UPDATE user_data SET balance = 100 WHERE rowid = 1`)
+
+	// Attempt purchase again
+	err = BuyStock(testDB, "TEST", 10, 5)
+
+	// Test for successful purchase
+	if err != nil {
+		t.Fatalf("Purchase failed: %v", err)
+	}
+
+	// User balance correctly deducted
+	var user_balance float64
+	err = testDB.QueryRow(`SELECT balance FROM user_data`).Scan(&user_balance)
+	if err != nil {
+		t.Fatalf("Error retrieving user balance: %v", err)
+	}
+	if user_balance != float64(50) {
+		t.Fatalf("Incorrect user balance after purchase. Expected %f, Got %f", float64(50), user_balance)
+	}
+
+	// Stock successfuly purchased
+	type StockData struct {
+		Code       string  `json:"code"`
+		Invested   float64 `json:"invested"`
+		StockCount float64 `json:"stock_count"`
+	}
+	var stock_data StockData
+	err = testDB.QueryRow(`SELECT invested, stock_count FROM stock WHERE code = "TEST"`).Scan(&stock_data.Invested, &stock_data.StockCount)
+	if err != nil {
+		t.Fatalf("Error retrieving stock: %v", err)
+	}
+
+	if stock_data.StockCount != 5 {
+		t.Fatalf("Incorrect stock count. Expected 5, Got %f", stock_data.StockCount)
+	}
+
+	// Purchasing more should add to existing entry
+	_, err = testDB.Exec(`UPDATE user_data SET balance = balance + 20 WHERE rowid = 1`)
+	if err != nil {
+		t.Fatalf("Error updating user balance: %v", err)
+	}
+	err = BuyStock(testDB, "TEST", 10, 2)
+	if err != nil {
+		t.Fatalf("Error purchasing stock: %v", err)
+	}
+
+	// Test database entry
+	err = testDB.QueryRow(`SELECT stock_count FROM stock WHERE code = "TEST"`).Scan(&stock_data.StockCount)
+	if err != nil {
+		t.Fatalf("Error retrieving stock count: %v", err)
+	}
+	assert.Equal(t, float64(7), stock_data.StockCount, "Second purchase not updating stock count correctly")
+}
+
+func TestSellStock(t *testing.T) {
+	// Sell non existant stock
+	err := SellStock(testDB, "FAKE", 10, 5)
+	if err == nil {
+		t.Fatalf("Stock should not exist")
+	}
+
+	// Test user balance is still 50
+	var user_balance float64
+	err = testDB.QueryRow(`SELECT balance FROM user_data`).Scan(&user_balance)
+	if err != nil {
+		t.Fatalf("Error retrieving user balance: %v", err)
+	}
+	assert.Equal(t, float64(50), user_balance, "Incorrect balance")
+
+	err = SellStock(testDB, "TEST", 10, 4) // Sell 4 stock for 10 each
+	if err != nil {
+		t.Fatalf("Error selling stock: %v", err)
+	}
+
+	// Test user balance is now 70
+	err = testDB.QueryRow(`SELECT balance FROM user_data`).Scan(&user_balance)
+	if err != nil {
+		t.Fatalf("Error retrieving user balance: %v", err)
+	}
+	assert.Equal(t, float64(90), user_balance, "Incorrect balance")
+
+	// Test 2 tokens were deducted
+	var stock_count float64
+	err = testDB.QueryRow(`SELECT stock_count FROM stock WHERE code == "TEST"`).Scan(&stock_count)
+	if err != nil {
+		t.Fatalf("Error retrieving stock count: %v", err)
+	}
+	assert.Equal(t, float64(3), stock_count, "Incorrect stock count")
+
+	// Test selling too many tokens
+	err = SellStock(testDB, "TEST", 10, 4)
+	if err == nil {
+		t.Fatalf("Sold more stock than owned. Owned 3, successfuly sold 4.")
+	}
+
+	// Make sure balance and stock count doesnt change
+	err = testDB.QueryRow(`SELECT balance FROM user_data`).Scan(&user_balance)
+	if err != nil {
+		t.Fatalf("Error retrieving user balance: %v", err)
+	}
+	assert.Equal(t, float64(90), user_balance, "Incorrect balance")
+	err = testDB.QueryRow(`SELECT stock_count FROM stock WHERE code == "TEST"`).Scan(&stock_count)
+	if err != nil {
+		t.Fatalf("Error retrieving stock count: %v", err)
+	}
+	assert.Equal(t, float64(3), stock_count, "Incorrect stock count")
+
+	// Test selling all and deleting from database
+	err = SellStock(testDB, "TEST", 10, 3)
+	if err != nil {
+		t.Fatalf("Error selling stock: %v", err)
+	}
+
+	// Make sure database correctly updated
+	err = testDB.QueryRow(`SELECT balance FROM user_data`).Scan(&user_balance)
+	if err != nil {
+		t.Fatalf("Error retrieving user balance: %v", err)
+	}
+	assert.Equal(t, float64(120), user_balance, "Incorrect balance")
+	err = testDB.QueryRow(`SELECT stock_count FROM stock WHERE code == "TEST"`).Scan(&stock_count)
 	if err != sql.ErrNoRows {
 		t.Fatalf("Database entry not deleted: %v", err)
 	}
