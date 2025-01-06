@@ -3,18 +3,11 @@ package models
 import (
 	"database/sql"
 	"fmt"
-
-	"github.com/iamloganwalsh/stock-trading-simulator/config"
 )
 
-func BuyCrypto(code string, cost float64, crypto_count float64) error {
+func BuyCrypto(db *sql.DB, code string, cost float64, crypto_count float64) error {
 	// Start a new transaction
 	cost *= crypto_count
-	db, err := config.ConnectDB()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
 
 	tx, err := db.Begin()
 	if err != nil {
@@ -29,6 +22,15 @@ func BuyCrypto(code string, cost float64, crypto_count float64) error {
 			err = tx.Commit()
 		}
 	}()
+
+	// Check that user can afford
+	user_balance, err := GetBalance(db) // From user.go
+	if err != nil {
+		return err
+	}
+	if user_balance < cost {
+		return fmt.Errorf("insufficient funds")
+	}
 
 	var invested float64
 	var old_count float64
@@ -53,15 +55,6 @@ func BuyCrypto(code string, cost float64, crypto_count float64) error {
 		}
 	}
 
-	// Double check that user can afford
-	user_balance, err := GetBalance() // From user.go
-	if err != nil {
-		return err
-	}
-	if user_balance < cost {
-		return fmt.Errorf("user is a brokie")
-	}
-
 	// Update user balance
 	updateBalanceQuery := `UPDATE user_data SET balance = balance - ? WHERE rowid = 1`
 	_, err = tx.Exec(updateBalanceQuery, cost)
@@ -72,12 +65,7 @@ func BuyCrypto(code string, cost float64, crypto_count float64) error {
 	return nil
 }
 
-func SellCrypto(code string, price float64, sell_quantity float64) error {
-	db, err := config.ConnectDB()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
+func SellCrypto(db *sql.DB, code string, price float64, sell_quantity float64) error {
 
 	// Start a new transaction
 	tx, err := db.Begin()
