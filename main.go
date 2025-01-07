@@ -1,13 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
 	"github.com/iamloganwalsh/stock-trading-simulator/config"
 	"github.com/iamloganwalsh/stock-trading-simulator/routes"
-	//"github.com/iamloganwalsh/stock-trading-simulator/utils"
+	"github.com/iamloganwalsh/stock-trading-simulator/utils"
 )
 
 // Struct to parse the response for stock quotes
@@ -52,6 +53,20 @@ func main() {
 	router.HandleFunc("/crypto/sell", routes.SellCryptoHandler).Methods("POST") // Could DELETE or UPDATE so POST for versatility
 	router.HandleFunc("/stock/buy", routes.BuyStockHandler).Methods("POST")
 	router.HandleFunc("/stock/sell", routes.SellStockHandler).Methods("POST") // Could DELETE or UPDATE so POST for versatility
+
+	stockPrice, err := utils.Fetch_api("AAPL")
+	if err != nil {
+		fmt.Println("Error fetching stock data:", err)
+	} else {
+		fmt.Printf("Current stock price of AAPL: $%2.f\n", stockPrice)
+	}
+
+	cryptoPrice, err := utils.Fetch_api("BINANCE:BTCUSDT")
+	if err != nil {
+		fmt.Println("Error fetching crypto data:", err)
+	} else {
+		fmt.Printf("Current crypto price of BTC/USDT: $%2.f\n", cryptoPrice)
+	}
 
 	log.Println("Starting server on localhost:3000...")
 	log.Fatal(http.ListenAndServe("localhost:3000", router))
