@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+
 	"github.com/joho/godotenv"
 )
 
@@ -23,8 +24,12 @@ type StockQuote struct {
 	Timestamp        int64   `json:"t"` // Unix timestamp
 }
 
-
 func Fetch_api(symbol string) (float64, error) {
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
 	apiKey := os.Getenv("API_KEY")
 	if apiKey == "" {
