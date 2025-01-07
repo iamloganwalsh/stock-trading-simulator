@@ -24,7 +24,7 @@ type StockQuote struct {
 
 func main() {
 
-	// Database Connect or Init
+	// Database Connect and Init
 	db, err := config.ConnectDB()
 
 	if err != nil {
