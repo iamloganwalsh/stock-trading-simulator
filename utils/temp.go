@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"github.com/joho/godotenv"
 )
 
 // Struct to parse the response for stock quotes
@@ -22,7 +23,9 @@ type StockQuote struct {
 	Timestamp        int64   `json:"t"` // Unix timestamp
 }
 
+
 func Fetch_api(symbol string) (float64, error) {
+
 	apiKey := os.Getenv("API_KEY")
 	if apiKey == "" {
 		return 0, fmt.Errorf("API key is not set")

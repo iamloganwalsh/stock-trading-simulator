@@ -2,17 +2,12 @@ package models
 
 import (
 	"database/sql"
-	"github.com/iamloganwalsh/stock-trading-simulator/config"
 	"fmt"
 )
 
-func BuyCrypto(code string, cost float64, crypto_count float64) error {
+func BuyCrypto(db *sql.DB, code string, cost float64, crypto_count float64) error {
 	// Start a new transaction
-	db, err := config.ConnectDB()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
+	cost *= crypto_count
 
 	tx, err := db.Begin()
 	if err != nil {
@@ -27,6 +22,15 @@ func BuyCrypto(code string, cost float64, crypto_count float64) error {
 			err = tx.Commit()
 		}
 	}()
+
+	// Check that user can afford
+	user_balance, err := GetBalance(db) // From user.go
+	if err != nil {
+		return err
+	}
+	if user_balance < cost {
+		return fmt.Errorf("insufficient funds")
+	}
 
 	var invested float64
 	var old_count float64
@@ -51,15 +55,6 @@ func BuyCrypto(code string, cost float64, crypto_count float64) error {
 		}
 	}
 
-	// Double check that user can afford	
-	user_balance, err := GetBalance() // From user.go
-	if err != nil {
-		return err
-	}
-	if user_balance < cost {
-		return fmt.Errorf("user is a brokie")
-	}
-	
 	// Update user balance
 	updateBalanceQuery := `UPDATE user_data SET balance = balance - ? WHERE rowid = 1`
 	_, err = tx.Exec(updateBalanceQuery, cost)
@@ -70,72 +65,65 @@ func BuyCrypto(code string, cost float64, crypto_count float64) error {
 	return nil
 }
 
+func SellCrypto(db *sql.DB, code string, price float64, sell_quantity float64) error {
 
-func SellCrypto(code string, price float64, sell_quantity float64) error {
-    db, err := config.ConnectDB()
-    if err != nil {
-        return err
-    }
-    defer db.Close()
+	// Start a new transaction
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if p := recover(); p != nil {
+			tx.Rollback()
+			panic(p)
+		} else if err != nil {
+			tx.Rollback()
+		} else {
+			err = tx.Commit()
+		}
+	}()
 
-    // Start a new transaction
-    tx, err := db.Begin()
-    if err != nil {
-        return err
-    }
-    defer func() {
-        if p := recover(); p != nil {
-            tx.Rollback()
-            panic(p)
-        } else if err != nil {
-            tx.Rollback()
-        } else {
-            err = tx.Commit()
-        }
-    }()
+	var invested float64
+	var crypto_count float64
+	cryptoInfoQuery := `SELECT invested, crypto_count FROM crypto WHERE code = ?`
+	err = tx.QueryRow(cryptoInfoQuery, code).Scan(&invested, &crypto_count)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return fmt.Errorf("user does not own specified crypto")
+		}
+		return err
+	}
 
-    var invested float64
-    var crypto_count float64
-    cryptoInfoQuery := `SELECT invested, crypto_count FROM crypto WHERE code = ?`
-    err = tx.QueryRow(cryptoInfoQuery, code).Scan(&invested, &crypto_count)
-    if err != nil {
-        if err == sql.ErrNoRows {
-            return fmt.Errorf("user does not own specified crypto")
-        }
-        return err
-    }
+	if sell_quantity > crypto_count {
+		return fmt.Errorf("user does not own that much crypto; current amount owned: %.6f", crypto_count)
+	}
 
-    if sell_quantity > crypto_count {
-        return fmt.Errorf("user does not own that much crypto; current amount owned: %.6f", crypto_count)
-    }
+	// Calculate new crypto count and invested amount
+	new_crypto_count := crypto_count - sell_quantity
+	new_invested := invested - (price * sell_quantity)
 
-    // Calculate new crypto count and invested amount
-    new_crypto_count := crypto_count - sell_quantity
-    new_invested := invested * (new_crypto_count / crypto_count)
+	if new_crypto_count == 0 {
+		// Delete the crypto entry if the new count is zero
+		deleteCryptoQuery := `DELETE FROM crypto WHERE code = ?`
+		_, err = tx.Exec(deleteCryptoQuery, code)
+		if err != nil {
+			return err
+		}
+	} else {
+		// Update crypto holdings
+		updateCryptoQuery := `UPDATE crypto SET invested = ?, crypto_count = ? WHERE code = ?`
+		_, err = tx.Exec(updateCryptoQuery, new_invested, new_crypto_count, code)
+		if err != nil {
+			return err
+		}
+	}
 
-    if new_crypto_count == 0 {
-        // Delete the crypto entry if the new count is zero
-        deleteCryptoQuery := `DELETE FROM crypto WHERE code = ?`
-        _, err = tx.Exec(deleteCryptoQuery, code)
-        if err != nil {
-            return err
-        }
-    } else {
-        // Update crypto holdings
-        updateCryptoQuery := `UPDATE crypto SET invested = ?, crypto_count = ? WHERE code = ?`
-        _, err = tx.Exec(updateCryptoQuery, new_invested, new_crypto_count, code)
-        if err != nil {
-            return err
-        }
-    }
+	// Update user balance
+	updateBalanceQuery := `UPDATE user_data SET balance = balance + ? WHERE rowid = 1`
+	_, err = tx.Exec(updateBalanceQuery, price*sell_quantity)
+	if err != nil {
+		return err
+	}
 
-    // Update user balance
-    updateBalanceQuery := `UPDATE user_data SET balance = balance + ? WHERE rowid = 1`
-    _, err = tx.Exec(updateBalanceQuery, price)
-    if err != nil {
-        return err
-    }
-
-    return nil
+	return nil
 }
-

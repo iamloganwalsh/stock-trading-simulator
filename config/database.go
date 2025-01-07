@@ -8,9 +8,17 @@ import (
 )
 
 // ConnectDB initializes and returns a database connection
-func ConnectDB() (*sql.DB, error) {
+func ConnectDB(testing ...string) (*sql.DB, error) {
 	// Open a connection to the SQLite database file
-	db, err := sql.Open("sqlite3", "./user_data.db")
+
+	// If no parameters, we want to use the real DB.
+	// If testing contains any values, we want to create a testing database
+	db_name := "./user_data.db"
+	if len(testing) > 0 {
+		db_name = testing[0]
+	}
+
+	db, err := sql.Open("sqlite3", db_name)
 	if err != nil {
 		log.Printf("Error opening database: %v\n", err)
 		return nil, err
@@ -22,7 +30,8 @@ func ConnectDB() (*sql.DB, error) {
 		return nil, err
 	}
 
-	log.Println("Successfully connected to the database.")
+	//log.Println("Successfully connected to the database.")
+	// The above line shows up every time we connect for each function, so I'm commenting it out for now
 	return db, nil
 }
 
