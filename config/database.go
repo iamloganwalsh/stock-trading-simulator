@@ -54,14 +54,22 @@ func InitDB(db *sql.DB) error {
 	createStockTableSQL := `
 	CREATE TABLE IF NOT EXISTS stock (
 		code TEXT NOT NULL,
-		invested REAL NOT NULL,
+		amount_held REAL NOT NULL,
+		total_bought_cost REAL NOT NULL,
+		total_sold_cost REAL NOT NULL,
+		total_stock_bought REAL NOT NULL,
+		total_stock_sold REAL NOT NULL,
 		stock_count REAL NOT NULL
 	);`
 
 	createCryptoTableSQL := `
 	CREATE TABLE IF NOT EXISTS crypto (
 		code TEXT NOT NULL,
-		invested REAL NOT NULL,
+		amount_held REAL NOT NULL,
+		total_bought_cost REAL NOT NULL,
+		total_sold_cost REAL NOT NULL,
+		total_crypto_bought REAL NOT NULL,
+		total_crypto_sold REAL NOT NULL,
 		crypto_count REAL NOT NULL
 	);`
 
