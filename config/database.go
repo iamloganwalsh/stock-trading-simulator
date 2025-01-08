@@ -47,29 +47,20 @@ func InitDB(db *sql.DB) error {
 	CREATE TABLE IF NOT EXISTS trade_history (
 		type TEXT NOT NULL,
 		code TEXT NOT NULL,
-		invested REAL NOT NULL,
-		sell_price REAL
+		method TEXT NOT NULL,
+		cost REAL NOT NULL,
+		date TEXT NOT NULL
 	);`
 
 	createStockTableSQL := `
 	CREATE TABLE IF NOT EXISTS stock (
-		code TEXT NOT NULL,
-		amount_held REAL NOT NULL,
-		total_bought_cost REAL NOT NULL,
-		total_sold_cost REAL NOT NULL,
-		total_stock_bought REAL NOT NULL,
-		total_stock_sold REAL NOT NULL,
+		code TEXT NOT NULL UNIQUE,
 		stock_count REAL NOT NULL
 	);`
 
 	createCryptoTableSQL := `
 	CREATE TABLE IF NOT EXISTS crypto (
-		code TEXT NOT NULL,
-		amount_held REAL NOT NULL,
-		total_bought_cost REAL NOT NULL,
-		total_sold_cost REAL NOT NULL,
-		total_crypto_bought REAL NOT NULL,
-		total_crypto_sold REAL NOT NULL,
+		code TEXT NOT NULL UNIQUE,
 		crypto_count REAL NOT NULL
 	);`
 
