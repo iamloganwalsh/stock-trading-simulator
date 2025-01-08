@@ -91,7 +91,7 @@ func SellStock(db *sql.DB, code string, price float64, sell_quantity float64) er
 	}()
 
 	var stock_count float64
-	stockInfoQuery := `SELECT invested, stock_count FROM stock WHERE code = ?`
+	stockInfoQuery := `SELECT stock_count FROM stock WHERE code = ?`
 	err = tx.QueryRow(stockInfoQuery, code).Scan(&stock_count)
 	if err != nil {
 		if err == sql.ErrNoRows {
