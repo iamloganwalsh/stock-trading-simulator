@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"time"
 )
 
 func BuyCrypto(db *sql.DB, code string, cost float64, crypto_count float64) error {
@@ -32,14 +33,13 @@ func BuyCrypto(db *sql.DB, code string, cost float64, crypto_count float64) erro
 		return fmt.Errorf("insufficient funds")
 	}
 
-	var invested float64
-	var old_count float64
-	query := `SELECT invested, crypto_count FROM crypto WHERE code = ?`
-	err = tx.QueryRow(query, code).Scan(&invested, &old_count)
+	var currentCryptoCount float64
+	query := `SELECT crypto_count FROM crypto WHERE code = ?`
+	err = tx.QueryRow(query, code).Scan(&currentCryptoCount)
 	if err != nil {
 		if err == sql.ErrNoRows { // Add new entry
-			addQuery := `INSERT INTO crypto (code, invested, crypto_count) VALUES (?, ?, ?)`
-			_, err = tx.Exec(addQuery, code, cost, crypto_count)
+			addQuery := `INSERT INTO crypto (code, crypto_count) VALUES (?, ?)`
+			_, err = tx.Exec(addQuery, code, crypto_count)
 			if err != nil {
 				return err
 			}
@@ -48,11 +48,18 @@ func BuyCrypto(db *sql.DB, code string, cost float64, crypto_count float64) erro
 		}
 	} else {
 		// Update existing entry
-		updateQuery := `UPDATE crypto SET invested = ?, crypto_count = ? WHERE code = ?`
-		_, err = tx.Exec(updateQuery, invested+cost, crypto_count+old_count, code)
+		updateQuery := `UPDATE crypto SET crypto_count = ? WHERE code = ?`
+		_, err = tx.Exec(updateQuery, crypto_count+currentCryptoCount, code)
 		if err != nil {
 			return err
 		}
+	}
+
+	// Update trade history
+	tradeCryptoQuery := `INSERT INTO trade_history (type, code, method, cost, date) VALUES (?, ?, ?, ?, ?)`
+	_, err = tx.Exec(tradeCryptoQuery, "crypto", code, "buy", cost, time.Now().Format(time.RFC3339))
+	if err != nil {
+		return err
 	}
 
 	// Update user balance
@@ -83,10 +90,9 @@ func SellCrypto(db *sql.DB, code string, price float64, sell_quantity float64) e
 		}
 	}()
 
-	var invested float64
 	var crypto_count float64
-	cryptoInfoQuery := `SELECT invested, crypto_count FROM crypto WHERE code = ?`
-	err = tx.QueryRow(cryptoInfoQuery, code).Scan(&invested, &crypto_count)
+	cryptoInfoQuery := `SELECT crypto_count FROM crypto WHERE code = ?`
+	err = tx.QueryRow(cryptoInfoQuery, code).Scan(&crypto_count)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return fmt.Errorf("user does not own specified crypto")
@@ -100,7 +106,6 @@ func SellCrypto(db *sql.DB, code string, price float64, sell_quantity float64) e
 
 	// Calculate new crypto count and invested amount
 	new_crypto_count := crypto_count - sell_quantity
-	new_invested := invested - (price * sell_quantity)
 
 	if new_crypto_count == 0 {
 		// Delete the crypto entry if the new count is zero
@@ -111,11 +116,20 @@ func SellCrypto(db *sql.DB, code string, price float64, sell_quantity float64) e
 		}
 	} else {
 		// Update crypto holdings
-		updateCryptoQuery := `UPDATE crypto SET invested = ?, crypto_count = ? WHERE code = ?`
-		_, err = tx.Exec(updateCryptoQuery, new_invested, new_crypto_count, code)
+		updateCryptoQuery := `UPDATE crypto SET crypto_count = ? WHERE code = ?`
+		_, err = tx.Exec(updateCryptoQuery, new_crypto_count, code)
 		if err != nil {
 			return err
 		}
+	}
+
+	// Update trade history
+	totalCryptoRevenue := price * sell_quantity
+	updateTradeQuery := `INSERT INTO trade_history (type, code, method, cost, date) VALUES (?, ?, ?, ?, ?)`
+	_, err = tx.Exec(updateTradeQuery, "crypto", code, "sell", totalCryptoRevenue, time.Now().Format(time.RFC3339))
+
+	if err != nil {
+		return err
 	}
 
 	// Update user balance

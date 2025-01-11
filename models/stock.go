@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"time"
 )
 
 func BuyStock(db *sql.DB, code string, cost float64, stock_count float64) error {
@@ -32,14 +33,13 @@ func BuyStock(db *sql.DB, code string, cost float64, stock_count float64) error 
 		return fmt.Errorf("insufficient funds")
 	}
 
-	var invested float64
-	var old_count float64
-	query := `SELECT invested, stock_count FROM stock WHERE code = ?`
-	err = tx.QueryRow(query, code).Scan(&invested, &old_count)
+	var currentStockCount float64
+	query := `SELECT stock_count FROM stock WHERE code = ?`
+	err = tx.QueryRow(query, code).Scan(&currentStockCount)
 	if err != nil {
 		if err == sql.ErrNoRows { // Add new entry
-			addQuery := `INSERT INTO stock (code, invested, stock_count) VALUES (?, ?, ?)`
-			_, err = tx.Exec(addQuery, code, cost, stock_count)
+			addQuery := `INSERT INTO stock (code, stock_count) VALUES (?, ?)`
+			_, err = tx.Exec(addQuery, code, stock_count)
 			if err != nil {
 				return err
 			}
@@ -48,11 +48,18 @@ func BuyStock(db *sql.DB, code string, cost float64, stock_count float64) error 
 		}
 	} else {
 		// Update existing entry
-		updateQuery := `UPDATE stock SET invested = ?, stock_count = ? WHERE code = ?`
-		_, err = tx.Exec(updateQuery, invested+cost, stock_count+old_count, code)
+		updateQuery := `UPDATE stock SET stock_count = ? WHERE code = ?`
+		_, err = tx.Exec(updateQuery, stock_count+currentStockCount, code)
 		if err != nil {
 			return err
 		}
+	}
+
+	// Update trade history
+	tradeQuery := `INSERT INTO trade_history (type, code, method, cost, date) VALUES (?, ?, ?, ?, ?)`
+	_, err = tx.Exec(tradeQuery, "stock", code, "buy", cost, time.Now().Format(time.RFC3339))
+	if err != nil {
+		return err
 	}
 
 	// Update user balance
@@ -83,10 +90,9 @@ func SellStock(db *sql.DB, code string, price float64, sell_quantity float64) er
 		}
 	}()
 
-	var invested float64
 	var stock_count float64
-	stockInfoQuery := `SELECT invested, stock_count FROM stock WHERE code = ?`
-	err = tx.QueryRow(stockInfoQuery, code).Scan(&invested, &stock_count)
+	stockInfoQuery := `SELECT stock_count FROM stock WHERE code = ?`
+	err = tx.QueryRow(stockInfoQuery, code).Scan(&stock_count)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return fmt.Errorf("user does not own specified stock")
@@ -100,7 +106,6 @@ func SellStock(db *sql.DB, code string, price float64, sell_quantity float64) er
 
 	// Calculate new stock count and invested amount
 	new_stock_count := stock_count - sell_quantity
-	new_invested := invested - (price * sell_quantity)
 
 	if new_stock_count == 0 {
 		// Delete the stock entry if the new count is zero
@@ -111,11 +116,20 @@ func SellStock(db *sql.DB, code string, price float64, sell_quantity float64) er
 		}
 	} else {
 		// Update stock holdings
-		updateStockQuery := `UPDATE stock SET invested = ?, stock_count = ? WHERE code = ?`
-		_, err = tx.Exec(updateStockQuery, new_invested, new_stock_count, code)
+		updateStockQuery := `UPDATE stock SET stock_count = ? WHERE code = ?`
+		_, err = tx.Exec(updateStockQuery, new_stock_count, code)
 		if err != nil {
 			return err
 		}
+	}
+
+	// Update trade history
+	totalRevenue := price * sell_quantity
+	updateTradeQuery := `INSERT INTO trade_history (type, code, method, cost, date) VALUES (?, ?, ?, ?, ?)`
+	_, err = tx.Exec(updateTradeQuery, "stock", code, "sell", totalRevenue, time.Now().Format(time.RFC3339))
+
+	if err != nil {
+		return err
 	}
 
 	// Update user balance
