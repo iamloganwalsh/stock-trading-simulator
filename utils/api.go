@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -24,7 +25,27 @@ type StockQuote struct {
 	Timestamp        int64   `json:"t"` // Unix timestamp
 }
 
+var (
+	redisClient *RedisClient
+	ctx         context.Context
+)
+
+func init() {
+	var err error
+	ctx = context.Background()
+	redisClient, err = NewRedisClient(ctx, "localhost:6379", "", 0)
+	if err != nil {
+		log.Printf("Failed to connect to Redis: %v", err)
+	}
+}
+
 func Fetch_api(symbol string) (float64, error) {
+
+	if redisClient != nil {
+		if price, err := redisClient.GetCacheStockQuote(symbol); err == nil && price != 0 {
+			return price, nil
+		}
+	}
 
 	err := godotenv.Load()
 	if err != nil {
@@ -77,6 +98,12 @@ func Fetch_api(symbol string) (float64, error) {
 	//fmt.Println("Timestamp:", timestamp.Format(time.RFC3339))
 
 	// Returning only the stock price for database calculating the profit gain and loss
+	if redisClient != nil {
+		err = redisClient.CacheStockPrice(symbol, quote.CurrentPrice)
+		if err != nil {
+			log.Printf("Failed to cache stock price: %v", err)
+		}
+	}
 	return quote.CurrentPrice, nil
 }
 
