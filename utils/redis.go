@@ -12,26 +12,43 @@ type RedisClient struct {
 	ctx    context.Context
 }
 
+// setting up the redis server
 func NewRedisClient(ctx context.Context, addr string, password string, db int) (*RedisClient, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
 	client := redis.NewClient(&redis.Options{
 		Addr:     addr,
 		Password: password,
 		DB:       db,
 	})
 
-	_, err := client.Ping(ctx).Result()
-	if err != nil {
+	if err := client.Ping(ctx).Err(); err != nil {
 		return nil, err
 	}
-	return &RedisClient{client: client}, nil
+
+	return &RedisClient{
+		client: client,
+		ctx:    ctx,
+	}, nil
 }
 
+// caching the price of a stock into redis client
 func (rc *RedisClient) CacheStockPrice(symbol string, price float64) error {
+	if rc.client == nil {
+		return redis.ErrClosed
+	}
 
 	return rc.client.Set(rc.ctx, "stock:"+symbol, price, time.Minute).Err()
 }
 
+// retrieveing data from the cache in redis
 func (rc *RedisClient) GetCacheStockQuote(symbol string) (float64, error) {
+	if rc.client == nil {
+		return 0, redis.ErrClosed
+	}
+
 	data, err := rc.client.Get(rc.ctx, "stock:"+symbol).Float64()
 	if err == redis.Nil {
 		return 0, nil
@@ -43,12 +60,21 @@ func (rc *RedisClient) GetCacheStockQuote(symbol string) (float64, error) {
 	return data, nil
 }
 
+// caching the price of a crypto into redis client
 func (rc *RedisClient) CacheCryptoPrice(symbol string, price float64) error {
+	if rc.client == nil {
+		return redis.ErrClosed
+	}
 
 	return rc.client.Set(rc.ctx, "crypto:"+symbol, price, time.Minute).Err()
 }
 
+// retrieveing data from the cache in redis
 func (rc *RedisClient) GetCacheCryptoQuote(symbol string) (float64, error) {
+	if rc.client == nil {
+		return 0, redis.ErrClosed
+	}
+
 	data, err := rc.client.Get(rc.ctx, "crypto:"+symbol).Float64()
 	if err == redis.Nil {
 		return 0, nil
@@ -58,6 +84,13 @@ func (rc *RedisClient) GetCacheCryptoQuote(symbol string) (float64, error) {
 	}
 
 	return data, nil
+}
+
+func (rc *RedisClient) Close() error {
+	if rc.client != nil {
+		return rc.client.Close()
+	}
+	return nil
 }
 
 /* extra functions which is not necessary right now
