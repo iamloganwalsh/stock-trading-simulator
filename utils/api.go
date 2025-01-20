@@ -39,13 +39,7 @@ func init() {
 	}
 }
 
-func Fetch_api(symbol string) (float64, error) {
-
-	if redisClient != nil {
-		if price, err := redisClient.GetCacheStockQuote(symbol); err == nil && price != 0 {
-			return price, nil
-		}
-	}
+func Fetch_api(symbol string) (*StockQuote, error) {
 
 	err := godotenv.Load()
 	if err != nil {
@@ -54,7 +48,7 @@ func Fetch_api(symbol string) (float64, error) {
 
 	apiKey := os.Getenv("API_KEY")
 	if apiKey == "" {
-		return 0, fmt.Errorf("API key is not set")
+		return nil, fmt.Errorf("API key is not set")
 	}
 
 	// Construct the API URL
@@ -85,277 +79,97 @@ func Fetch_api(symbol string) (float64, error) {
 		log.Fatalf("Failed to parse JSON: %v", err)
 	}
 
-	// Print the stock quote details
-	//fmt.Printf("Stock Quote for %s:\n", symbol)
-	//fmt.Printf("Current Price: $%.2f\n", quote.CurrentPrice)
-	//fmt.Printf("Change: $%.2f\n", quote.Change)
-	//fmt.Printf("Percentage Change: %.2f%%\n", quote.PercentageChange)
-	//fmt.Printf("High Price: $%.2f\n", quote.High)
-	//fmt.Printf("Low Price: $%.2f\n", quote.Low)
-	//fmt.Printf("Open Price: $%.2f\n", quote.Open)
-	//fmt.Printf("Previous Close: $%.2f\n", quote.PreviousClose)
-	//timestamp := time.Unix(quote.Timestamp, 0)
-	//fmt.Println("Timestamp:", timestamp.Format(time.RFC3339))
+	return &quote, nil
+}
 
-	// Returning only the stock price for database calculating the profit gain and loss
+// needs more development!!!
+func Fetch_price(symbol string) (float64, error) {
 	if redisClient != nil {
-		err = redisClient.CacheStockPrice(symbol, quote.CurrentPrice)
-		if err != nil {
+		price, err := redisClient.GetCacheStockQuote(symbol)
+		if err == nil && price != 0 {
+			return price, nil
+		}
+	}
+	quote, err := Fetch_api(symbol)
+	if err != nil {
+		return 0, err
+	}
+
+	if redisClient != nil {
+		if err := redisClient.CacheStockPrice(symbol, quote.CurrentPrice); err != nil {
 			log.Printf("Failed to cache stock price: %v", err)
 		}
 	}
+
 	return quote.CurrentPrice, nil
 }
 
 func Fetch_timestamp(symbol string) (time.Time, error) {
-	apiKey := os.Getenv("API_KEY")
-	if apiKey == "" {
-		return time.Now(), fmt.Errorf("API key is not set")
-	}
+	quote, err := Fetch_api(symbol)
 
-	// Construct the API URL
-	url := fmt.Sprintf("https://finnhub.io/api/v1/quote?symbol=%s&token=%s", symbol, apiKey)
-
-	// Send GET request to the API
-	resp, err := http.Get(url)
 	if err != nil {
-		log.Fatalf("Failed to fetch data: %v", err)
-	}
-	defer resp.Body.Close()
-
-	// Check if the response status code is OK
-	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("Error: Received status code %d", resp.StatusCode)
+		return time.Time{}, err
 	}
 
-	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalf("Failed to read response body: %v", err)
-	}
-
-	// Parse the JSON response into the StockQuote struct
-	var quote StockQuote
-	err = json.Unmarshal(body, &quote)
-	if err != nil {
-		log.Fatalf("Failed to parse JSON: %v", err)
-	}
-	timestamp := time.Unix(quote.Timestamp, 0)
-	return timestamp, nil
+	return time.Unix(quote.Timestamp, 0), nil
 }
 
 func Fetch_previous_close(symbol string) (float64, error) {
-	apiKey := os.Getenv("API_KEY")
-	if apiKey == "" {
-		return 0, fmt.Errorf("API key is not set")
-	}
+	quote, err := Fetch_api(symbol)
 
-	// Construct the API URL
-	url := fmt.Sprintf("https://finnhub.io/api/v1/quote?symbol=%s&token=%s", symbol, apiKey)
-
-	// Send GET request to the API
-	resp, err := http.Get(url)
 	if err != nil {
-		log.Fatalf("Failed to fetch data: %v", err)
-	}
-	defer resp.Body.Close()
-
-	// Check if the response status code is OK
-	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("Error: Received status code %d", resp.StatusCode)
+		return 0, err
 	}
 
-	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalf("Failed to read response body: %v", err)
-	}
-
-	// Parse the JSON response into the StockQuote struct
-	var quote StockQuote
-	err = json.Unmarshal(body, &quote)
-	if err != nil {
-		log.Fatalf("Failed to parse JSON: %v", err)
-	}
 	return quote.PreviousClose, nil
 }
 
 func Fetch_open_price(symbol string) (float64, error) {
-	apiKey := os.Getenv("API_KEY")
-	if apiKey == "" {
-		return 0, fmt.Errorf("API key is not set")
-	}
+	quote, err := Fetch_api(symbol)
 
-	// Construct the API URL
-	url := fmt.Sprintf("https://finnhub.io/api/v1/quote?symbol=%s&token=%s", symbol, apiKey)
-
-	// Send GET request to the API
-	resp, err := http.Get(url)
 	if err != nil {
-		log.Fatalf("Failed to fetch data: %v", err)
-	}
-	defer resp.Body.Close()
-
-	// Check if the response status code is OK
-	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("Error: Received status code %d", resp.StatusCode)
+		return 0, err
 	}
 
-	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalf("Failed to read response body: %v", err)
-	}
-
-	// Parse the JSON response into the StockQuote struct
-	var quote StockQuote
-	err = json.Unmarshal(body, &quote)
-	if err != nil {
-		log.Fatalf("Failed to parse JSON: %v", err)
-	}
 	return quote.Open, nil
 }
 
 func Fetch_low_price(symbol string) (float64, error) {
-	apiKey := os.Getenv("API_KEY")
-	if apiKey == "" {
-		return 0, fmt.Errorf("API key is not set")
-	}
+	quote, err := Fetch_api(symbol)
 
-	// Construct the API URL
-	url := fmt.Sprintf("https://finnhub.io/api/v1/quote?symbol=%s&token=%s", symbol, apiKey)
-
-	// Send GET request to the API
-	resp, err := http.Get(url)
 	if err != nil {
-		log.Fatalf("Failed to fetch data: %v", err)
-	}
-	defer resp.Body.Close()
-
-	// Check if the response status code is OK
-	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("Error: Received status code %d", resp.StatusCode)
+		return 0, err
 	}
 
-	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalf("Failed to read response body: %v", err)
-	}
-
-	// Parse the JSON response into the StockQuote struct
-	var quote StockQuote
-	err = json.Unmarshal(body, &quote)
-	if err != nil {
-		log.Fatalf("Failed to parse JSON: %v", err)
-	}
 	return quote.Low, nil
 }
 
 func Fetch_high_price(symbol string) (float64, error) {
-	apiKey := os.Getenv("API_KEY")
-	if apiKey == "" {
-		return 0, fmt.Errorf("API key is not set")
-	}
+	quote, err := Fetch_api(symbol)
 
-	// Construct the API URL
-	url := fmt.Sprintf("https://finnhub.io/api/v1/quote?symbol=%s&token=%s", symbol, apiKey)
-
-	// Send GET request to the API
-	resp, err := http.Get(url)
 	if err != nil {
-		log.Fatalf("Failed to fetch data: %v", err)
-	}
-	defer resp.Body.Close()
-
-	// Check if the response status code is OK
-	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("Error: Received status code %d", resp.StatusCode)
+		return 0, err
 	}
 
-	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalf("Failed to read response body: %v", err)
-	}
-
-	// Parse the JSON response into the StockQuote struct
-	var quote StockQuote
-	err = json.Unmarshal(body, &quote)
-	if err != nil {
-		log.Fatalf("Failed to parse JSON: %v", err)
-	}
 	return quote.High, nil
 }
 
 func Fetch_percent_change(symbol string) (float64, error) {
-	apiKey := os.Getenv("API_KEY")
-	if apiKey == "" {
-		return 0, fmt.Errorf("API key is not set")
-	}
+	quote, err := Fetch_api(symbol)
 
-	// Construct the API URL
-	url := fmt.Sprintf("https://finnhub.io/api/v1/quote?symbol=%s&token=%s", symbol, apiKey)
-
-	// Send GET request to the API
-	resp, err := http.Get(url)
 	if err != nil {
-		log.Fatalf("Failed to fetch data: %v", err)
-	}
-	defer resp.Body.Close()
-
-	// Check if the response status code is OK
-	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("Error: Received status code %d", resp.StatusCode)
+		return 0, err
 	}
 
-	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalf("Failed to read response body: %v", err)
-	}
-
-	// Parse the JSON response into the StockQuote struct
-	var quote StockQuote
-	err = json.Unmarshal(body, &quote)
-	if err != nil {
-		log.Fatalf("Failed to parse JSON: %v", err)
-	}
 	return quote.PercentageChange, nil
 }
 
 func Fetch_change(symbol string) (float64, error) {
-	apiKey := os.Getenv("API_KEY")
-	if apiKey == "" {
-		return 0, fmt.Errorf("API key is not set")
-	}
+	quote, err := Fetch_api(symbol)
 
-	// Construct the API URL
-	url := fmt.Sprintf("https://finnhub.io/api/v1/quote?symbol=%s&token=%s", symbol, apiKey)
-
-	// Send GET request to the API
-	resp, err := http.Get(url)
 	if err != nil {
-		log.Fatalf("Failed to fetch data: %v", err)
-	}
-	defer resp.Body.Close()
-
-	// Check if the response status code is OK
-	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("Error: Received status code %d", resp.StatusCode)
+		return 0, err
 	}
 
-	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalf("Failed to read response body: %v", err)
-	}
-
-	// Parse the JSON response into the StockQuote struct
-	var quote StockQuote
-	err = json.Unmarshal(body, &quote)
-	if err != nil {
-		log.Fatalf("Failed to parse JSON: %v", err)
-	}
 	return quote.Change, nil
 }
