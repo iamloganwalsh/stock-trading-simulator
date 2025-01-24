@@ -9,19 +9,8 @@ import (
 	"github.com/iamloganwalsh/stock-trading-simulator/config"
 	"github.com/iamloganwalsh/stock-trading-simulator/routes"
 	"github.com/iamloganwalsh/stock-trading-simulator/utils"
+	"github.com/rs/cors"
 )
-
-// Struct to parse the response for stock quotes
-type StockQuote struct {
-	CurrentPrice     float64 `json:"c"`
-	Change           float64 `json:"d"`
-	PercentageChange float64 `json:"dp"`
-	High             float64 `json:"h"`
-	Low              float64 `json:"l"`
-	Open             float64 `json:"o"`
-	PreviousClose    float64 `json:"pc"`
-	Timestamp        int64   `json:"t"` // Unix timestamp
-}
 
 func main() {
 
@@ -37,6 +26,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to initialize the database: %v", err)
 	}
+
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:5173"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization"},
+		AllowCredentials: true,
+	})
 
 	router := mux.NewRouter()
 
@@ -54,20 +50,21 @@ func main() {
 	router.HandleFunc("/stock/buy", routes.BuyStockHandler).Methods("POST")
 	router.HandleFunc("/stock/sell", routes.SellStockHandler).Methods("POST") // Could DELETE or UPDATE so POST for versatility
 
-	stockPrice, err := utils.Fetch_api("AAPL")
+	stockPrice, err := utils.Fetch_price("AAPL")
 	if err != nil {
 		fmt.Println("Error fetching stock data:", err)
 	} else {
 		fmt.Printf("Current stock price of AAPL: $%2.f\n", stockPrice)
 	}
 
-	cryptoPrice, err := utils.Fetch_api("BINANCE:BTCUSDT")
+	cryptoPrice, err := utils.Fetch_price("BINANCE:BTCUSDT")
 	if err != nil {
 		fmt.Println("Error fetching crypto data:", err)
 	} else {
 		fmt.Printf("Current crypto price of BTC/USDT: $%2.f\n", cryptoPrice)
 	}
 
+	handler := c.Handler(router)
 	log.Println("Starting server on localhost:3000...")
-	log.Fatal(http.ListenAndServe("localhost:3000", router))
+	log.Fatal(http.ListenAndServe("localhost:3000", handler))
 }

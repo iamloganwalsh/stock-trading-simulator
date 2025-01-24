@@ -7,7 +7,7 @@ const createUser = async (createUsername) => {
     return response.data;
 }
 
-const getUsers = async () => {
+const getUsername = async () => {
     const response = await api.get('/user/username');
     return response.data;
 }
@@ -34,7 +34,7 @@ const getStockPortfolio = async () => {
 
 export default {
     createUser,
-    getUsers,
+    getUsername,
     getBalance,
     getProfitLoss,
     getCryptoPortfolio,
