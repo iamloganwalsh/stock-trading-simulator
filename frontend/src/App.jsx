@@ -7,21 +7,48 @@ import userServices from './services/userServices.js'
 function App() {
 
   const [balance, setBalance] = useState(null)
+  const [username, setUsername] = useState(null)
+  const [profitloss, setProfitLoss] = useState(null)
+  const [error, setError] = useState(null)
+  const [loading, setLoading] = useState(null)
 
   useEffect(() => {
-    const fetchBalance = async () => {
-      const balanceData = await userServices.getBalance();
-      setBalance(balanceData);
-    }
+    const fetchUserData = async () => {
+      try{
+        const [balanceData, usernameData, profitlossData] = await Promise.all([
+          userServices.getBalance(),
+          userServices.getUsername(),
+          userServices.getProfitLoss(),
+        ]);
 
-    fetchBalance();
+        setBalance(balanceData);
+        setUsername(usernameData);
+        setProfitLoss(profitlossData)
+      } catch (err) {
+        setError('Failed to fetch user data.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
   }, []);
 
   return (
     <>
-    <p>{balance ? `Balance: ${balance}` : 'Loading balance...'}</p>
+      {loading ? (
+        <p>Loading user data...</p>
+      ) : error ? (
+        <p style={{ color: 'red'}}>{error}</p>
+      ) : (
+        <>
+          <p>Balance: {balance}</p>
+          <p>Username: {username}</p>
+          <p>Profit / Loss: {profitloss}</p>
+        </>
+      )}
     </>
-  )
+  );
 }
 
 export default App
