@@ -17,8 +17,26 @@ const getBalance = async () => {
     return response.data;
 }
 
+const getProfitLoss = async () => {
+    const response = await api.get('/user/profit_loss');
+    return response.data;
+}
+
+const getCryptoPortfolio = async () => {
+    const response = await api.get('/user/crypto_portfolio');
+    return response.data;
+}
+
+const getStockPortfolio = async () => {
+    const response = await api.get('/user/stock_portfolio');
+    return response.data;
+}
+
 export default {
     createUser,
     getUsers,
     getBalance,
+    getProfitLoss,
+    getCryptoPortfolio,
+    getStockPortfolio,
 }
