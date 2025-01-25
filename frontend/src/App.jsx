@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react'
-import './App.css'
-import userServices from './services/userServices.js'
-
-
+import { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import './App.css';
+import userServices from './services/userServices.js';
+import NavBar from '../components/navbar.jsx';
+import Home from '../pages/homepage.jsx';
+import AccountPage from '../pages/accountPage.jsx';
 
 function App() {
 
@@ -36,19 +38,27 @@ function App() {
 
   return (
     <>
-      {loading ? (
-        <p>Loading user data...</p>
-      ) : error ? (
-        <p style={{ color: 'red'}}>{error}</p>
-      ) : (
-        <>
-          <p>Balance: {balance}</p>
-          <p>Username: {username}</p>
-          <p>Profit / Loss: {profitloss}</p>
-        </>
-      )}
+      <NavBar />
+      <Routes>
+        <Route
+          path="/account"
+          element={
+            <AccountPage
+              balance={balance}
+              username={username}
+              profitloss={profitloss}
+              loading={loading}
+              error={error}
+            />
+          }
+        />
+        <Route
+          path="/"
+          element={<Home />}
+        />
+      </Routes>
     </>
   );
-}
+};
 
 export default App
