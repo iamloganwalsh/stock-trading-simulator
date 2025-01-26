@@ -27,7 +27,7 @@ function App() {
         setUsername(usernameData);
         setProfitLoss(profitlossData)
       } catch (err) {
-        setError('Failed to fetch user data.');
+        setError('Failed to fetch user data:', err);
       } finally {
         setLoading(false);
       }

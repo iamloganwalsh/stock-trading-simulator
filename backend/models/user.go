@@ -59,14 +59,13 @@ func GetProfitLoss(db *sql.DB) (float64, error) {
 
 type CryptoData struct {
 	Code         string  `json:"code"`
-	Invested     float64 `json:"invested"`
 	Crypto_count float64 `json:"crypto_count"`
 }
 
 func GetCryptoPortfolio(db *sql.DB) ([]CryptoData, error) {
 	var crypto_items []CryptoData
 
-	rows, err := db.Query("SELECT code, invested, crypto_count FROM crypto")
+	rows, err := db.Query("SELECT code, crypto_count FROM crypto")
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +73,7 @@ func GetCryptoPortfolio(db *sql.DB) ([]CryptoData, error) {
 
 	for rows.Next() {
 		var crypto CryptoData
-		err = rows.Scan(&crypto.Code, &crypto.Invested, &crypto.Crypto_count)
+		err = rows.Scan(&crypto.Code, &crypto.Crypto_count)
 		if err != nil {
 			return nil, err
 		}
@@ -91,14 +90,13 @@ func GetCryptoPortfolio(db *sql.DB) ([]CryptoData, error) {
 
 type StockData struct {
 	Code        string  `json:"code"`
-	Invested    float64 `json:"invested"`
 	Stock_count float64 `json:"stock_count"`
 }
 
 func GetStockPortfolio(db *sql.DB) ([]StockData, error) {
 	var stock_items []StockData
 
-	rows, err := db.Query("SELECT code, invested, stock_count FROM stock")
+	rows, err := db.Query("SELECT code, stock_count FROM stock")
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +104,7 @@ func GetStockPortfolio(db *sql.DB) ([]StockData, error) {
 
 	for rows.Next() {
 		var stock StockData
-		err = rows.Scan(&stock.Code, &stock.Invested, &stock.Stock_count)
+		err = rows.Scan(&stock.Code, &stock.Stock_count)
 		if err != nil {
 			return nil, err
 		}
