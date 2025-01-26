@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import userServices from './services/userServices.js'
 
-
-
 function App() {
 
   const [balance, setBalance] = useState(null)
@@ -25,7 +23,7 @@ function App() {
         setUsername(usernameData);
         setProfitLoss(profitlossData)
       } catch (err) {
-        setError('Failed to fetch user data.');
+        setError('Failed to fetch user data:', err);
       } finally {
         setLoading(false);
       }

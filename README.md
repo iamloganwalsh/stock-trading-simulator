@@ -20,6 +20,8 @@ Assuming no errors pop up, this should be good to go.
 
 To stop the redis server, execute: "sudo service redis-server stop"
 
+If the redis server is already set up on your machine, you only need to execute "sudo service redis-server status".
+
 ### Preparing the .env file
 In the backend folder stock-trading-simulator/backend, create a new file called ".env".
 
