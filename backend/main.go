@@ -50,14 +50,18 @@ func main() {
 	router.HandleFunc("/stock/buy", routes.BuyStockHandler).Methods("POST")
 	router.HandleFunc("/stock/sell", routes.SellStockHandler).Methods("POST") // Could DELETE or UPDATE so POST for versatility
 
-	stockPrice, err := utils.Fetch_price("AAPL")
+	// Fetching routes
+	router.HandleFunc("/crypto/fetch/{code}", routes.FetchCryptoHandler).Methods("GET")
+	router.HandleFunc("/stock/fetch/{code}", routes.FetchStockHandler).Methods("GET")
+
+	stockPrice, err := utils.Fetch_stock_price("AAPL")
 	if err != nil {
 		fmt.Println("Error fetching stock data:", err)
 	} else {
 		fmt.Printf("Current stock price of AAPL: $%2.f\n", stockPrice)
 	}
 
-	cryptoPrice, err := utils.Fetch_price("BINANCE:BTCUSDT")
+	cryptoPrice, err := utils.Fetch_crypto_price("BINANCE:BTCUSDT")
 	if err != nil {
 		fmt.Println("Error fetching crypto data:", err)
 	} else {

@@ -83,7 +83,8 @@ func Fetch_api(symbol string) (*StockQuote, error) {
 }
 
 // needs more development!!!
-func Fetch_price(symbol string) (float64, error) {
+
+func Fetch_stock_price(symbol string) (float64, error) {
 	if redisClient != nil {
 		price, err := redisClient.GetCacheStockQuote(symbol)
 		if err == nil && price != 0 {
@@ -98,6 +99,27 @@ func Fetch_price(symbol string) (float64, error) {
 	if redisClient != nil {
 		if err := redisClient.CacheStockPrice(symbol, quote.CurrentPrice); err != nil {
 			log.Printf("Failed to cache stock price: %v", err)
+		}
+	}
+
+	return quote.CurrentPrice, nil
+}
+
+func Fetch_crypto_price(symbol string) (float64, error) {
+	if redisClient != nil {
+		price, err := redisClient.GetCacheCryptoQuote(symbol)
+		if err == nil && price != 0 {
+			return price, nil
+		}
+	}
+	quote, err := Fetch_api(symbol)
+	if err != nil {
+		return 0, err
+	}
+
+	if redisClient != nil {
+		if err := redisClient.CacheCryptoPrice(symbol, quote.CurrentPrice); err != nil {
+			log.Printf("Failed to cache crypto price: %v", err)
 		}
 	}
 
