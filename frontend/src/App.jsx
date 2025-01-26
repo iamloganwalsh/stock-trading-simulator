@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import userServices from './services/userServices.js';
-import NavBar from '../components/navbar.jsx';
-import Home from '../pages/homepage.jsx';
-import AccountPage from '../pages/accountPage.jsx';
+import NavBar from './components/navbar.jsx';
+import Home from './pages/homePage.jsx';
+import AccountPage from './pages/accountPage.jsx';
 
 function App() {
 
