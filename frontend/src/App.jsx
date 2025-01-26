@@ -5,6 +5,7 @@ import userServices from './services/userServices.js';
 import NavBar from './components/navbar.jsx';
 import Home from './pages/homePage.jsx';
 import AccountPage from './pages/accountPage.jsx';
+import PortfolioPage from './pages/portfolioPage.jsx'
 
 function App() {
 
@@ -40,6 +41,17 @@ function App() {
     <>
       <NavBar />
       <Routes>
+        <Route
+          path="/portfolio"
+          element={
+            <PortfolioPage
+              balance={balance}
+              profitloss={profitloss}
+              loading={loading}
+              error={error}
+            />
+          }
+        />
         <Route
           path="/account"
           element={
