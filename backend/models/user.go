@@ -2,7 +2,6 @@ package models
 
 import (
 	"database/sql"
-
 )
 
 func InitUser(db *sql.DB, username string) error {
@@ -117,4 +116,38 @@ func GetStockPortfolio(db *sql.DB) ([]StockData, error) {
 	}
 
 	return stock_items, nil
+}
+
+type trade_history_data struct {
+	Type   string  `json:"type"`
+	Code   string  `json:"code"`
+	Method string  `json:"method"`
+	Cost   float64 `json:"cost"`
+	Date   string  `json:"date"`
+}
+
+func GetTradeHistory(db *sql.DB) ([]trade_history_data, error) {
+	var history_items []trade_history_data
+
+	rows, err := db.Query("SELECT type, code, method, cost, date FROM trade_history")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var history trade_history_data
+		err = rows.Scan(&history.Type, &history.Code, &history.Method, &history.Cost, &history.Date)
+		if err != nil {
+			return nil, err
+		}
+		history_items = append(history_items, history)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return history_items, nil
 }

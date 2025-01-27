@@ -32,6 +32,11 @@ const getStockPortfolio = async () => {
     return response.data;
 }
 
+const getTradeHistory = async () => {
+    const response = await api.get('/user/trade_history');
+    return response.data;
+}
+
 export default {
     createUser,
     getUsername,
@@ -39,4 +44,5 @@ export default {
     getProfitLoss,
     getCryptoPortfolio,
     getStockPortfolio,
+    getTradeHistory,
 }

@@ -10,7 +10,6 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
   });
 
   useEffect(() => {
-    // Fetch portfolio data from an API or use dummy data for now
     const fetchStocks = async () => {
       try {
         const stocksData = await userServices.getStockPortfolio();

@@ -151,3 +151,27 @@ func GetStockPortfolioHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(json_data)
 }
+
+func GetTradeHistoryHandler(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method should be GET", http.StatusMethodNotAllowed)
+		return
+	}
+	db, _ := config.ConnectDB()
+	stock_items, err := models.GetTradeHistory(db)
+	if err != nil {
+		http.Error(w, "Internal server error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	json_data, err := json.Marshal(stock_items)
+	if err != nil {
+		http.Error(w, "Failed to encode data", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(json_data)
+}

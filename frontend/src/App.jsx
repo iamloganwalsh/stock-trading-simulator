@@ -6,8 +6,8 @@ import NavBar from './components/navbar.jsx';
 import Home from './pages/homePage.jsx';
 import AccountPage from './pages/accountPage.jsx';
 import PortfolioPage from './pages/portfolioPage.jsx'
-
 import fetchingServices from './services/fetchingServices.js'
+import Trade from './pages/tradePage.jsx';
 
 function App() {
 
@@ -65,6 +65,10 @@ function App() {
               error={error}
             />
           }
+        />
+        <Route
+          path="/trade"
+          element={<Trade />}
         />
         <Route
           path="/"

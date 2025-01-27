@@ -43,6 +43,7 @@ func main() {
 	router.HandleFunc("/user/profit_loss", routes.GetProfitLossHandler).Methods("GET")
 	router.HandleFunc("/user/crypto_portfolio", routes.GetCryptoPortfolioHandler).Methods("GET")
 	router.HandleFunc("/user/stock_portfolio", routes.GetStockPortfolioHandler).Methods("GET")
+	router.HandleFunc("/user/trade_history", routes.GetTradeHistoryHandler).Methods("GET")
 
 	// Trade routes (Crypto & Stock)
 	router.HandleFunc("/crypto/buy", routes.BuyCryptoHandler).Methods("POST")
