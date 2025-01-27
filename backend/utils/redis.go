@@ -40,7 +40,7 @@ func (rc *RedisClient) CacheStockPrice(symbol string, price float64) error {
 		return redis.ErrClosed
 	}
 
-	return rc.client.Set(rc.ctx, "stock:"+symbol, price, time.Minute).Err()
+	return rc.client.Set(rc.ctx, "stock:"+symbol, price, time.Second).Err()
 }
 
 // retrieveing data from the cache in redis
@@ -66,7 +66,7 @@ func (rc *RedisClient) CacheCryptoPrice(symbol string, price float64) error {
 		return redis.ErrClosed
 	}
 
-	return rc.client.Set(rc.ctx, "crypto:"+symbol, price, time.Minute).Err()
+	return rc.client.Set(rc.ctx, "crypto:"+symbol, price, time.Second).Err()
 }
 
 // retrieveing data from the cache in redis

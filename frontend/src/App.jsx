@@ -7,6 +7,8 @@ import Home from './pages/homePage.jsx';
 import AccountPage from './pages/accountPage.jsx';
 import PortfolioPage from './pages/portfolioPage.jsx'
 
+import fetchingServices from './services/fetchingServices.js'
+
 function App() {
 
   const [balance, setBalance] = useState(null)

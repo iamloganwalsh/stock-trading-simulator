@@ -1,4 +1,5 @@
 import React from 'react';
+import CryptoGraph from '../components/graph';
 
 const Home = () => {
   const styles = {
@@ -21,7 +22,9 @@ const Home = () => {
       <p style={styles.paragraph}>
         Use the navigation bar on the left to explore your portfolio, trade stocks, view the market, or manage your account.
       </p>
+      <CryptoGraph />
     </div>
+    
   );
 };
 

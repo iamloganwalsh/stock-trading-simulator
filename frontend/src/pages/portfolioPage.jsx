@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import userServices from "../services/userServices";
+import fetchingServices from "../services/fetchingServices";
 
 const Portfolio = ({ balance, profitloss, loading, error }) => {
   const [portfolio, setPortfolio] = useState({
@@ -13,9 +14,16 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
     const fetchStocks = async () => {
       try {
         const stocksData = await userServices.getStockPortfolio();
+        const updatedStocks = await Promise.all(
+          stocksData.map(async (stock) => {
+            const newPrice = await fetchingServices.fetchStockPrice(stock.code);
+            return { ...stock, value: newPrice};
+          })
+        );
+
         setPortfolio((prevPortfolio) => ({
           ...prevPortfolio,
-          stocks: stocksData,
+          stocks: updatedStocks,
         }));
       } catch (err) {
         console.error("Error fetching stocks:", err);
@@ -23,6 +31,23 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
     };
     fetchStocks();
   }, []);
+
+  const fetchUpdatedStockPrices = async () => {
+    try {
+      const updatedStocks = await Promise.all(
+        portfolio.stocks.map(async (stock) => {
+          const newPrice = await fetchingServices.fetchStockPrice(stock.code);
+          return { ...stock, value: newPrice };
+        })
+      );
+      setPortfolio((prevPortfolio) => ({
+        ...prevPortfolio,
+        stocks: updatedStocks,
+      }));
+    } catch (err) {
+      console.error("Error fetching updated stock prices:", err);
+    }
+  };
 
   if (loading) {
     return <div>Loading...</div>;
@@ -104,6 +129,20 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
           ))}
         </div>
       </div>
+      <button
+        onClick={fetchUpdatedStockPrices}
+        style={{
+          marginTop: "24px",
+          padding: "10px 16px",
+          backgroundColor: "#16a34a",
+          color: "white",
+          border: "none",
+          borderRadius: "8px",
+          cursor: "pointer",
+        }}
+      >
+        Refresh Stock Prices
+      </button>
     </div>
   );
 };
