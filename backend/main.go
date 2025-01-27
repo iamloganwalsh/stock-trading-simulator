@@ -53,6 +53,8 @@ func main() {
 	// Fetching routes
 	router.HandleFunc("/crypto/fetch/{code}", routes.FetchCryptoHandler).Methods("GET")
 	router.HandleFunc("/stock/fetch/{code}", routes.FetchStockHandler).Methods("GET")
+	router.HandleFunc("/crypto/fetch_prev/{code}", routes.FetchCryptoPrevHandler).Methods("GET")
+	//router.HandleFunc("/stock/fetch_prev/{code}", routes.FetchStockPrevHandler).Methods("GET")
 
 	stockPrice, err := utils.Fetch_stock_price("AAPL")
 	if err != nil {
