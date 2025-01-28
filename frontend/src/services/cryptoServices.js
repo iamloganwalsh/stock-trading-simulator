@@ -6,7 +6,7 @@ const buyCrypto = async (code, cost, amount) => {
         cost: cost,
         crypto_count: amount,
     })
-    return response.data;
+    return response;
 }
 
 const sellCrypto = async (code, cost, amount) => {
@@ -15,7 +15,7 @@ const sellCrypto = async (code, cost, amount) => {
         cost: cost,
         crypto_count: amount,
     })
-    return response.data
+    return response;
 }
 
 export default {

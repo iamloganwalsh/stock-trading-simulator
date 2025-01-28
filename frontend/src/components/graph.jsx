@@ -26,6 +26,7 @@ import fetchingServices from '../services/fetchingServices';
 
 const CryptoGraph = ({crypto_name, yahoo_code, finnhub_code}) => {
   const [prices, setPrices] = useState([]);
+  const [currPrice, setCurrPrice] = useState("Loading live data...");
   const [timestamps, setTimestamps] = useState([]);
 
   const updateGraph = (price) => {
@@ -80,6 +81,7 @@ const CryptoGraph = ({crypto_name, yahoo_code, finnhub_code}) => {
     const fetchPrice = async () => {
       const data = await fetchingServices.fetchCryptoPrice(finnhub_code);
       console.log("New Price Data:", data);
+      setCurrPrice(data);
       updateGraph(data);
     };
 
@@ -96,8 +98,7 @@ const CryptoGraph = ({crypto_name, yahoo_code, finnhub_code}) => {
         display: false,
       },
       title: {
-        display: true,
-        text: `${crypto_name} Price Chart`,
+        display: true, // Adds padding
       },
     },
   };
@@ -114,7 +115,28 @@ const CryptoGraph = ({crypto_name, yahoo_code, finnhub_code}) => {
     ],
   };
 
-  return <Line options={options} data={data} />;
+  return (
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+
+      {currPrice && (
+        <div 
+          style={{
+            position: 'absolute',
+            top: '-15px',
+            left: '0',
+            color: 'white',
+            padding: '5px 10px',
+            borderRadius: '5px',
+            fontSize: '16px',
+          }}
+        >
+          {`Current Price ${crypto_name}: $${currPrice}`}
+        </div>
+      )}
+
+      <Line options={options} data={data} />
+    </div>
+  )
 };
 
 export default CryptoGraph;
