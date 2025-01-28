@@ -24,18 +24,20 @@ ChartJS.register(
 
 import fetchingServices from '../services/fetchingServices';
 
-const CryptoGraph = () => {
+const CryptoGraph = ({crypto_name, yahoo_code, finnhub_code}) => {
   const [prices, setPrices] = useState([]);
   const [timestamps, setTimestamps] = useState([]);
 
   const updateGraph = (price) => {
+    const currentTime = Date.now();
+    
     setPrices((prev) => [...prev, price]);
-    setTimestamps((prev) => [...prev, new Date().toLocaleTimeString()]);
+    setTimestamps((prev) => [...prev, currentTime]); // Store timestamp in ms
   };
 
   useEffect(() => {
     const fetchInitialData = async () => {
-      const response = await fetchingServices.fetchCryptoPrevPrice("BTC-USD");
+      const response = await fetchingServices.fetchCryptoPrevPrice(yahoo_code);
       console.log("Initial Data Response:", response);
 
       if (response && response.data) {
@@ -51,30 +53,23 @@ const CryptoGraph = () => {
         initialData.forEach((price, _) => {
           if (price !== 0 && !isNaN(price)) {
             filteredData.push(price);
-            // Generate timestamps only for real data points
-            filteredTimestamps.push(new Date().toLocaleTimeString());
+            filteredTimestamps.push(Date.now()); // Start with the current time
           }
         });
 
         console.log("Filtered Prices:", filteredData);
         console.log("Filtered Timestamps:", filteredTimestamps);
 
-        // Check if the lengths of prices and timestamps are the same
-        if (filteredData.length !== filteredTimestamps.length) {
+        // Adjust the timestamps to go backward in time (each timestamp 10 seconds apart)
+        const adjustedTimestamps = filteredTimestamps.map((timestamp, index) => {
+          return timestamp - (filteredTimestamps.length - 1 - index) * 10000; // Subtract 10s for each step
+        });
 
-          const lengthDifference = filteredData.length - filteredTimestamps.length;
+        console.log("Adjusted Timestamps:", adjustedTimestamps);
 
-          // If the lengths are not the same, trim the oldest data from the longer array
-          if (lengthDifference > 0) {
-            setTimestamps((prev) => prev.slice(lengthDifference));
-          } else if (lengthDifference < 0) {
-            setPrices((prev) => prev.slice(-lengthDifference));
-          }
-        }
-
-        // Set the filtered data to the state
+        // Set the filtered data and adjusted timestamps to the state
         setPrices(filteredData);
-        setTimestamps(filteredTimestamps);
+        setTimestamps(adjustedTimestamps);
       } else {
         console.log("No initial data fetched.");
       }
@@ -83,7 +78,7 @@ const CryptoGraph = () => {
     fetchInitialData();
 
     const fetchPrice = async () => {
-      const data = await fetchingServices.fetchCryptoPrice("BINANCE:BTCUSDT");
+      const data = await fetchingServices.fetchCryptoPrice(finnhub_code);
       console.log("New Price Data:", data);
       updateGraph(data);
     };
@@ -92,26 +87,26 @@ const CryptoGraph = () => {
     const interval = setInterval(fetchPrice, 10000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, []); // The dependency array is empty to ensure this runs only once
 
   const options = {
     responsive: true,
     plugins: {
       legend: {
-        position: 'top',
+        display: false,
       },
       title: {
         display: true,
-        text: 'BTC Price Chart',
+        text: `${crypto_name} Price Chart`,
       },
     },
   };
 
   const data = {
-    labels: timestamps,
+    labels: timestamps.map((timestamp) => new Date(timestamp).toLocaleTimeString()), // Convert timestamps to readable format
     datasets: [
       {
-        label: 'BTC',
+        label: crypto_name,
         data: prices,
         borderColor: 'rgb(255, 99, 132)',
         backgroundColor: 'rgba(255, 99, 132, 0.5)',

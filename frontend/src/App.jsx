@@ -5,6 +5,7 @@ import userServices from './services/userServices.js';
 import NavBar from './components/navbar.jsx';
 import Home from './pages/homePage.jsx';
 import AccountPage from './pages/accountPage.jsx';
+import CryptoView from './pages/cryptoView.jsx'
 
 import fetchingServices from './services/fetchingServices.js'
 
@@ -57,6 +58,10 @@ function App() {
         <Route
           path="/"
           element={<Home />}
+        />
+        <Route
+        path="/view/crypto/:crypto_code?"
+        element={<CryptoView />}
         />
       </Routes>
     </>
