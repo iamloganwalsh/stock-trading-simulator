@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from "react";
+import fetchingServices from "../services/fetchingServices";
 
 const fetchPopularStocks = async () => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve([
-        { code: "AAPL", name: "Apple Inc.", price: 150.12, change: 1.2 },
-        { code: "GOOGL", name: "Alphabet Inc.", price: 2800.5, change: -2.5 },
-        { code: "TSLA", name: "Tesla Inc.", price: 800.34, change: 5.4 },
-        { code: "MSFT", name: "Microsoft Corporation", price: 310.67, change: -1.1 },
-        { code: "AMZN", name: "Amazon.com Inc.", price: 3456.78, change: 0.0 },
-      ]);
-    }, 1000);
-  });
+    try {
+        const symbols = ['AAPL', 'GOOGL', 'TSLA', 'MSFT', 'AMZN', 'NVDA', 'GOOG', 'META'];
+        const names = ['Apple Inc', 'Alphabet Inc', 'Tesla Inc', 'Microsoft Corp', 'Amazon.com Inc', 'NVIDIA Corp', 'Alphabet Inc', 'Meta Platforms Inc']
+        const quotes = await Promise.all(
+          symbols.map((symbol) => fetchingServices.fetchStockPrice(symbol))
+        );
+    
+        return symbols.map((symbol, index) => ({
+          code: symbol,
+          name: names[index],
+          price: quotes[index],
+        }));
+      } catch (error) {
+        console.error('Failed to fetch popular stocks:', error);
+        throw error;
+      }
 };
 
 const StocksPage = () => {
@@ -39,10 +45,10 @@ const StocksPage = () => {
 
   useEffect(() => {
     const filtered = popularStocks.filter(
-      (stock) =>
-        stock.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        stock.code.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+        (stock) =>
+          (stock.name && stock.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (stock.code && stock.code.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
 
     const sorted = filtered.sort((a, b) => {
       if (sortOption === "price") return b.price - a.price; 
@@ -62,7 +68,7 @@ const StocksPage = () => {
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Popular Stocks</h1>
+      <h1 className="text-2xl font-bold mb-4">Stocks</h1>
 
       <input
         type="text"
@@ -92,18 +98,6 @@ const StocksPage = () => {
             </div>
             <div className="text-right">
               <span className="block font-bold">${stock.price.toFixed(2)}</span>
-              <span
-                className={
-                  stock.change > 0
-                    ? "text-green-600"
-                    : stock.change < 0
-                    ? "text-red-600"
-                    : "text-gray-600"
-                }
-              >
-                {stock.change > 0 && "+"}
-                {stock.change.toFixed(2)}%
-              </span>
             </div>
           </li>
         ))}
