@@ -1,6 +1,7 @@
 import React from 'react';
 import CryptoGraph from '../components/graph';
 import { useParams } from "react-router-dom";
+import TradeInput from '../components/tradeInput';
 
 const CryptoView = () => {
   const styles = {
@@ -50,6 +51,7 @@ const CryptoView = () => {
 
       <div>
         <CryptoGraph crypto_name={crypto_name} yahoo_code={yahoo_code} finnhub_code={finnhub_code} />
+        <TradeInput type="crypto" code={crypto_name} finnhub_code={finnhub_code}/>
       </div>
       
     </div>
