@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import userServices from "../services/userServices";
 import fetchingServices from "../services/fetchingServices";
+import { useNavigate } from 'react-router-dom';
 
 const Portfolio = ({ balance, profitloss, loading, error }) => {
   const [portfolio, setPortfolio] = useState({
@@ -8,6 +9,8 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
     profitLoss: profitloss || 0,
     stocks: [],
   });
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchStocks = async () => {
@@ -48,6 +51,14 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
     }
   };
 
+  const handleBuy = (stockCode) => {
+    navigate(`/stocksportfolio/${stockCode}`);
+  };
+
+  const handleSell = (stockCode) => {
+    navigate(`/stocksportfolio/${stockCode}`);
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -68,12 +79,13 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
         <div
           style={{
             backgroundColor: "#f5f5f5",
-            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+            boxShadow: "0 2px 4px rgba(70, 167, 25, 0.1)",
             padding: "16px",
             textAlign: "center",
+            borderRadius: "4px",
           }}
         >
-          <h2 style={{ fontSize: "20px", fontWeight: "bold" }}>Total Balance</h2>
+          <h2 style={{ fontSize: "20px", fontWeight: "bold", color: '#242424'}}>Total Balance</h2>
           <p style={{ fontSize: "24px", color: "#16a34a" }}>${portfolio.totalBalance}</p>
         </div>
         <div
@@ -82,9 +94,10 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
             boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
             padding: "16px",
             textAlign: "center",
+            borderRadius: "4px",
           }}
         >
-          <h2 style={{ fontSize: "20px", fontWeight: "bold" }}>Profit/Loss</h2>
+          <h2 style={{ fontSize: "20px", fontWeight: "bold", color: '#242424' }}>Profit/Loss</h2>
           <p
             style={{
               fontSize: "24px",
@@ -117,6 +130,8 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
                 padding: "16px",
                 textAlign: "center",
                 transition: "transform 0.2s",
+                color: '#242424',
+                borderRadius: "4px",
               }}
               onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
               onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
@@ -124,6 +139,35 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
               <h3 style={{ fontSize: "18px", fontWeight: "bold" }}>{stock.code}</h3>
               <p style={{ color: "#4b5563" }}>Shares: {stock.stock_count}</p>
               <p style={{ color: "#4b5563" }}>Value: ${stock.value}</p>
+              <button
+                onClick={() => handleBuy(stock.code)}
+                style={{
+                  marginTop: "8px",
+                  padding: "6px 12px",
+                  backgroundColor: "#3b82f6",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  marginRight: "8px",
+                }}
+              >
+                Buy
+              </button>
+              <button
+                onClick={() => handleSell(stock.code)}
+                style={{
+                  marginTop: "8px",
+                  padding: "6px 12px",
+                  backgroundColor: "#ef4444",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                Sell
+              </button>
             </div>
           ))}
         </div>

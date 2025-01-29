@@ -13,11 +13,9 @@ const TradeHistory = () => {
         const data = await userServices.getTradeHistory();
         setTrades(data);
         
-        // Calculate totals
         const total = data.reduce((sum, trade) => sum + trade.cost, 0);
         setTotalValue(total);
         
-        // Calculate profit/loss (assuming profit/loss data is available in trades)
         const pl = data.reduce((sum, trade) => sum + (trade.profit || 0), 0);
         setProfitLoss(pl);
       } catch (err) {
@@ -56,11 +54,12 @@ const TradeHistory = () => {
                 padding: "16px",
                 textAlign: "center",
                 transition: "transform 0.2s",
+                borderRadius: "8px",
               }}
               onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
               onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
             >
-              <h3 style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "8px" }}>{trade.code}</h3>
+              <h3 style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "8px", color:'#242424' }}>{trade.code}</h3>
               <div style={{ color: "#4b5563", marginBottom: "8px" }}>
                 <p>Type: {trade.type}</p>
                 <p>Method: {trade.method}</p>

@@ -9,14 +9,14 @@ const MarketPage = () => {
   };
 
   return (
-    <div className="p-4 flex flex-col items-center justify-center min-h-screen">
-      <h1 className="text-4xl font-bold mb-6">Welcome to the Market</h1>
-      <p className="text-lg text-gray-600 mb-6">
+    <div>
+      <h1>Welcome to the Market</h1>
+      <p>
         Explore popular stocks and track their performance.
       </p>
       <button
         onClick={handleViewStocks}
-        className="bg-blue-500 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-600 transition"
+        style={{ padding: "10px 20px", fontSize: "16px", color:'#242424', backgroundColor:'lightgrey' }}
       >
         View Popular Stocks
       </button>
