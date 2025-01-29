@@ -79,10 +79,10 @@ function App() {
         />
         <Route
           path="/stocks"
-          element={<StocksPage/ >}
+          element={<StocksPage />}
         />
         <Route
-          path="/stocksportfolio"
+          path="/stocksportfolio/:stockCode"
           element={<Buysell />}
         />
         <Route

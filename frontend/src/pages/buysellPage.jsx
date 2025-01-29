@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import userServices from '../services/userServices';
 import stockServices from '../services/stockServices';
 import fetchingServices from '../services/fetchingServices';
 
 const Buysell = () => {
-  const [selectedStock, setSelectedStock] = useState('');
+  const { stockCode } = useParams(); // Get stock code from URL parameter
+  const [selectedStock, setSelectedStock] = useState(stockCode || '');
   const [quantity, setQuantity] = useState('');
   const [portfolio, setPortfolio] = useState([]);
   const [balance, setBalance] = useState(0);
