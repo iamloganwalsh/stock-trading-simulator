@@ -5,7 +5,7 @@ import stockServices from '../services/stockServices';
 import fetchingServices from '../services/fetchingServices';
 
 const Buysell = () => {
-  const { stockCode } = useParams(); // Get stock code from URL parameter
+  const { stockCode } = useParams(); 
   const [selectedStock, setSelectedStock] = useState(stockCode || '');
   const [quantity, setQuantity] = useState('');
   const [portfolio, setPortfolio] = useState([]);

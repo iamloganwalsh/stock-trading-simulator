@@ -1,60 +1,57 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, ArrowUpDown } from "lucide-react";
 import fetchingServices from "../services/fetchingServices";
 
 const StocksPage = () => {
   const navigate = useNavigate();
-  const [popularStocks, setPopularStocks] = useState([]);
-  const [filteredStocks, setFilteredStocks] = useState([]);
+  const [cryptos, setCryptos] = useState([]);
+  const [stocks, setStocks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState("name");
 
   useEffect(() => {
-    const loadPopularStocks = async () => {
+    const loadData = async () => {
       try {
-        const symbols = ["AAPL", "GOOGL", "TSLA", "MSFT", "AMZN", "NVDA", "GOOG", "META"];
-        const names = ["Apple Inc", "Alphabet Inc", "Tesla Inc", "Microsoft Corp", "Amazon.com Inc", "NVIDIA Corp", "Alphabet Inc", "Meta Platforms Inc"];
-        const quotes = await Promise.all(
-          symbols.map((symbol) => fetchingServices.fetchStockPrice(symbol))
+        const cryptoSymbols = ["BTC", "ETH", "XRP", "USDT", "SOL", "BNB", "USDC", "DOGE"];
+        const cryptoNames = ["Bitcoin", "Ethereum", "XRP", "USDT", "Solana", "BNB", "USD Coin", "Dogecoin"];
+        const cryptoPrices = await Promise.all(
+          cryptoSymbols.map((symbol) => fetchingServices.fetchCryptoPrice(symbol))
         );
-        
-        const stocks = symbols.map((symbol, index) => ({
+
+        const stockSymbols = ["AAPL", "GOOG", "GOOGL", "AMZN", "MSFT", "TSLA", "NVDA", "META"];
+        const stockNames = ["Apple Inc", "Alphabet Inc", "Alphabet Inc", "Amazon.com Inc", "Microsoft Corp", "Tesla Inc", "NVIDIA Corp", "Meta Platforms Inc"];
+        const stockPrices = await Promise.all(
+          stockSymbols.map((symbol) => fetchingServices.fetchStockPrice(symbol))
+        );
+
+        setCryptos(cryptoSymbols.map((symbol, index) => ({
           code: symbol,
-          name: names[index],
-          price: quotes[index]
-        }));
-        
-        setPopularStocks(stocks);
-        setFilteredStocks(stocks);
+          name: cryptoNames[index],
+          price: cryptoPrices[index]
+        })));
+
+        setStocks(stockSymbols.map((symbol, index) => ({
+          code: symbol,
+          name: stockNames[index],
+          price: stockPrices[index]
+        })));
       } catch (err) {
-        setError("Unable to load popular stocks.");
+        setError("Unable to load market data.");
       } finally {
         setLoading(false);
       }
     };
 
-    loadPopularStocks();
+    loadData();
   }, []);
 
-  useEffect(() => {
-    const filtered = popularStocks.filter(
-      (stock) =>
-        (stock.name && stock.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (stock.code && stock.code.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
-
-    const sorted = [...filtered].sort((a, b) => {
-      if (sortOption === "price") {
-        return (b.price ?? 0) - (a.price ?? 0);
-      }
-      return (a.name ?? "").localeCompare(b.name ?? "");
-    });
-
-    setFilteredStocks(sorted);
-  }, [searchTerm, sortOption, popularStocks]);
+  const handleSort = (option) => {
+    setSortOption(option);
+    setCryptos([...cryptos].sort((a, b) => option === "name" ? a.name.localeCompare(b.name) : a.price - b.price));
+    setStocks([...stocks].sort((a, b) => option === "name" ? a.name.localeCompare(b.name) : a.price - b.price));
+  };
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
@@ -64,53 +61,66 @@ const StocksPage = () => {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
         <input
           type="text"
-          placeholder="Search stocks..."
+          placeholder="Search stocks or cryptocurrencies..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{ padding: "10px", border: "1px solid #ccc", borderRadius: "8px", flex: 1, fontSize: "16px" }}
         />
-        <button 
-          onClick={() => setSortOption(sortOption === "name" ? "price" : "name")}
-          style={{ marginLeft: "10px", padding: "10px 16px", backgroundColor: "#007BFF", color: "#fff", border: "none", borderRadius: "8px", cursor: "pointer", fontSize: "16px" }}
-        >
-          <ArrowUpDown size={18} style={{ marginRight: "5px" }} /> Sort by {sortOption === "name" ? "Price" : "Name"}
-        </button>
+        <button onClick={() => handleSort("name")} style={{ marginLeft: "10px", color: 'white' }}>Sort by Name</button>
+        <button onClick={() => handleSort("price")} style={{ marginLeft: "10px", color: 'white'  }}>Sort by Price</button>
       </div>
-
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-        gap: "20px",
-        alignItems: "stretch"
-      }}>
-        {filteredStocks.map((stock) => (
-          <div
-            key={stock.code}
-            onClick={() => navigate(`/stocksportfolio/${stock.code}`)}
-            style={{
-              backgroundColor: "#fff",
-              padding: "20px",
-              borderRadius: "12px",
-              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-              cursor: "pointer",
-              textAlign: "center",
-              transition: "transform 0.2s, box-shadow 0.2s",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#242424",
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
-            onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
-          >
-            <h3 style={{ fontSize: "20px", fontWeight: "bold", marginBottom: "5px" }}>{stock.code}</h3>
-            <p style={{ fontSize: "14px", color: "#555", marginBottom: "10px" }}>{stock.name}</p>
-            <p style={{ fontSize: "18px", fontWeight: "bold", color: "#007BFF" }}>
-              ${stock.price.toFixed(2)}
-            </p>
-          </div>
-        ))}
+      <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-around" }}>
+        <h2>Cryptocurrencies</h2>
+        <h2>Stocks</h2>
+      </div>
+      <div style={{ display: "flex", flexDirection: "row", gap: "70px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(200px, 1fr))", gap: "20px" }}>
+          {cryptos.map((crypto) => (
+            <div
+              key={crypto.code}
+              onClick={() => navigate(`/stocksportfolio/${crypto.code}`)}
+              style={{
+                backgroundColor: "#fff",
+                padding: "20px",
+                borderRadius: "12px",
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                textAlign: "center",
+                color: "#242424",
+                marginBottom: "10px"
+              }}
+            >
+              <h3>{crypto.code}</h3>
+              <p>{crypto.name}</p>
+              <p style={{ fontSize: "18px", fontWeight: "bold", color: "#007BFF" }}>
+                ${crypto.price.toFixed(2)}
+              </p>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(200px, 1fr))", gap: "20px" }}>
+          
+          {stocks.map((stock) => (
+            <div
+              key={stock.code}
+              onClick={() => navigate(`/stocksportfolio/${stock.code}`)}
+              style={{
+                backgroundColor: "#fff",
+                padding: "20px",
+                borderRadius: "12px",
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                textAlign: "center",
+                color: "#242424",
+                marginBottom: "10px",
+              }}
+            >
+              <h3>{stock.code}</h3>
+              <p>{stock.name}</p>
+              <p style={{ fontSize: "18px", fontWeight: "bold", color: "#007BFF" }}>
+                ${stock.price.toFixed(2)}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -12,13 +12,13 @@ const MarketPage = () => {
     <div>
       <h1>Welcome to the Market</h1>
       <p>
-        Explore popular stocks and track their performance.
+        Explore popular stocks / crypto and track their performance.
       </p>
       <button
         onClick={handleViewStocks}
         style={{ padding: "10px 20px", fontSize: "16px", color:'#242424', backgroundColor:'lightgrey' }}
       >
-        View Popular Stocks
+        View Market
       </button>
     </div>
   );
