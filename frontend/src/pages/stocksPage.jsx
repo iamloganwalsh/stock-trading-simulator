@@ -84,7 +84,7 @@ const StocksPage = () => {
         <h2>Stocks</h2>
       </div>
       <div style={{ display: "flex", flexDirection: "row", gap: "70px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(200px, 1fr))", gap: "20px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(200px, 1fr))", gap: "20px", height: "fit-content" }}>
           {filteredCryptos.map((crypto) => (
             <div
               key={crypto.code}
@@ -96,7 +96,8 @@ const StocksPage = () => {
                 boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
                 textAlign: "center",
                 color: "#242424",
-                marginBottom: "10px"
+                marginBottom: "10px",
+                height: "fit-content"
               }}
             >
               <h3>{crypto.code}</h3>
@@ -107,7 +108,7 @@ const StocksPage = () => {
             </div>
           ))}
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(200px, 1fr))", gap: "20px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(200px, 1fr))", gap: "20px", height: "fit-content" }}>
           {filteredStocks.map((stock) => (
             <div
               key={stock.code}
@@ -120,6 +121,7 @@ const StocksPage = () => {
                 textAlign: "center",
                 color: "#242424",
                 marginBottom: "10px",
+                height: "fit-content"
               }}
             >
               <h3>{stock.code}</h3>
