@@ -43,7 +43,8 @@ const TradeInput = ({ type, code, finnhub_code }) => {
               ? ss.buyStock(code, currPrice, parsedAmount)
               : ss.sellStock(code, currPrice, parsedAmount));
 
-      if (response?.Status !== 201) {
+      if (response?.status !== 201) {
+        console.log(response);
         alert("Error processing the transaction");
       } else {
         alert("Transaction successful");
