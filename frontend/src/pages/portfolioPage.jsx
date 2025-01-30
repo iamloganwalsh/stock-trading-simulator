@@ -92,7 +92,7 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
   if (error) return <div>{error}</div>;
 
   return (
-    <div style={{ padding: "24px" }}>
+    <div style={{ padding: "24px", marginLeft: "50px" }}>
       <div
         style={{
           display: "grid",

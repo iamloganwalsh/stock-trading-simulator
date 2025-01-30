@@ -32,13 +32,13 @@ const TradeHistory = () => {
   }
 
   return (
-    <div style={{ padding: "24px" }}>
+    <div style={{ padding: "24px", marginLeft: "220px" }}> 
       <div>
         <h2 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "16px" }}>Your Trades History</h2>
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", 
             gap: "24px",
             width: "100%",
             maxWidth: "1200px",
@@ -55,6 +55,8 @@ const TradeHistory = () => {
                 textAlign: "center",
                 transition: "transform 0.2s",
                 borderRadius: "8px",
+                position: "relative",
+                zIndex: 1,
               }}
               onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
               onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}

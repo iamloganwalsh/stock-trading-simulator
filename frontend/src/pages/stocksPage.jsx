@@ -67,7 +67,7 @@ const StocksPage = () => {
   if (error) return <div>{error}</div>;
 
   return (
-    <div style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
+    <div style={{ padding: "24px", maxWidth: "1200px", margin: "0 0 0 50px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
         <input
           type="text"
