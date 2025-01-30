@@ -8,8 +8,7 @@ import AccountPage from './pages/accountPage.jsx';
 import PortfolioPage from './pages/portfolioPage.jsx'
 import fetchingServices from './services/fetchingServices.js'
 import Trade from './pages/tradePage.jsx';
-import Market from './pages/marketPage.jsx';
-import StocksPage from './pages/stocksPage.jsx';
+import StocksPage from './pages/marketPage.jsx';
 import Buysell from './pages/buysellPage.jsx';
 
 function App() {
@@ -75,10 +74,6 @@ function App() {
         />
         <Route
           path="/market"
-          element={<Market />}
-        />
-        <Route
-          path="/stocks"
           element={<StocksPage />}
         />
         <Route
