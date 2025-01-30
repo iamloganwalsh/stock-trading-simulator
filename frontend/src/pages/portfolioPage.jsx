@@ -8,33 +8,53 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
     totalBalance: balance || 0,
     profitLoss: profitloss || 0,
     stocks: [],
+    crypto: [],
   });
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchStocks = async () => {
+    const fetchAssets = async () => {
       try {
         const stocksData = await userServices.getStockPortfolio();
+        const cryptoData = await userServices.getCryptoPortfolio(); 
+
+        const validStocks = Array.isArray(stocksData) ? stocksData : [];
         const updatedStocks = await Promise.all(
-          stocksData.map(async (stock) => {
+          validStocks.map(async (stock) => {
             const newPrice = await fetchingServices.fetchStockPrice(stock.code);
-            return { ...stock, value: newPrice};
+            return { ...stock, value: newPrice };
+          })
+        );
+
+        const validCrypto = Array.isArray(cryptoData) ? cryptoData : [];
+        const updatedCrypto = await Promise.all(
+          validCrypto.map(async (crypto) => {
+            const newPrice = await fetchingServices.fetchCryptoPrice(crypto.code);
+            return { ...crypto, value: newPrice };
           })
         );
 
         setPortfolio((prevPortfolio) => ({
           ...prevPortfolio,
           stocks: updatedStocks,
+          crypto: updatedCrypto, 
         }));
       } catch (err) {
-        console.error("Error fetching stocks:", err);
+        console.error("Error fetching assets:", err);
+        setPortfolio((prev) => ({
+          ...prev,
+          stocks: [],
+          crypto: [], 
+        }));
       }
     };
-    fetchStocks();
+    
+
+    fetchAssets();
   }, []);
 
-  const fetchUpdatedStockPrices = async () => {
+  const fetchUpdatedPrices = async () => {
     try {
       const updatedStocks = await Promise.all(
         portfolio.stocks.map(async (stock) => {
@@ -42,12 +62,21 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
           return { ...stock, value: newPrice };
         })
       );
+
+      const updatedCrypto = await Promise.all(
+        portfolio.crypto.map(async (crypto) => {
+          const newPrice = await fetchingServices.fetchCryptoPrice(crypto.code);
+          return { ...crypto, value: newPrice };
+        })
+      );
+
       setPortfolio((prevPortfolio) => ({
         ...prevPortfolio,
         stocks: updatedStocks,
+        crypto: updatedCrypto,
       }));
     } catch (err) {
-      console.error("Error fetching updated stock prices:", err);
+      console.error("Error fetching updated prices:", err);
     }
   };
 
@@ -59,13 +88,8 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
     navigate(`/stocksportfolio/${stockCode}`);
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>{error}</div>;
-  }
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <div style={{ padding: "24px" }}>
@@ -85,7 +109,7 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
             borderRadius: "4px",
           }}
         >
-          <h2 style={{ fontSize: "20px", fontWeight: "bold", color: '#242424'}}>Total Balance</h2>
+          <h2 style={{ fontSize: "20px", fontWeight: "bold", color: "#242424" }}>Total Balance</h2>
           <p style={{ fontSize: "24px", color: "#16a34a" }}>${portfolio.totalBalance}</p>
         </div>
         <div
@@ -97,7 +121,7 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
             borderRadius: "4px",
           }}
         >
-          <h2 style={{ fontSize: "20px", fontWeight: "bold", color: '#242424' }}>Profit/Loss</h2>
+          <h2 style={{ fontSize: "20px", fontWeight: "bold", color: "#242424" }}>Profit/Loss</h2>
           <p
             style={{
               fontSize: "24px",
@@ -116,9 +140,9 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
             gap: "24px",
-            width: "100%", 
-            maxWidth: "1200px", 
-            margin: "0 auto", 
+            width: "100%",
+            maxWidth: "1200px",
+            margin: "0 auto",
           }}
         >
           {portfolio.stocks.map((stock, index) => (
@@ -130,7 +154,7 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
                 padding: "16px",
                 textAlign: "center",
                 transition: "transform 0.2s",
-                color: '#242424',
+                color: "#242424",
                 borderRadius: "4px",
               }}
               onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
@@ -139,9 +163,7 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
               <h3 style={{ fontSize: "18px", fontWeight: "bold" }}>{stock.code}</h3>
               <p style={{ color: "#4b5563" }}>Shares: {stock.stock_count}</p>
               <p style={{ color: "#4b5563" }}>Value: ${stock.value}</p>
-              <button
-                onClick={() => handleBuy(stock.code)}
-                style={{
+              <button onClick={() => handleBuy(stock.code)}  style={{
                   marginTop: "8px",
                   padding: "6px 12px",
                   backgroundColor: "#3b82f6",
@@ -150,13 +172,8 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
                   borderRadius: "4px",
                   cursor: "pointer",
                   marginRight: "8px",
-                }}
-              >
-                Buy
-              </button>
-              <button
-                onClick={() => handleSell(stock.code)}
-                style={{
+                }}>Buy</button>
+              <button onClick={() => handleSell(stock.code)} style={{
                   marginTop: "8px",
                   padding: "6px 12px",
                   backgroundColor: "#ef4444",
@@ -164,17 +181,67 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
                   border: "none",
                   borderRadius: "4px",
                   cursor: "pointer",
-                }}
-              >
-                Sell
-              </button>
+                }}>Sell</button>
             </div>
           ))}
         </div>
       </div>
-      <button
-        onClick={fetchUpdatedStockPrices}
-        style={{
+
+      <div>
+        <h2 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "16px" }}>Your Cryptos</h2>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+            gap: "24px",
+            width: "100%",
+            maxWidth: "1200px",
+            margin: "0 auto",
+          }}
+        >
+          {portfolio.crypto.map((crypto, index) => (
+            <div
+              key={index}
+              style={{
+                backgroundColor: "#ffffff",
+                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+                padding: "16px",
+                textAlign: "center",
+                transition: "transform 0.2s",
+                color: "#242424",
+                borderRadius: "4px",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
+              onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+            >
+              <h3 style={{ fontSize: "18px", fontWeight: "bold" }}>{crypto.code}</h3>
+              <p style={{ color: "#4b5563" }}>Coins: {crypto.crypto_count}</p>
+              <p style={{ color: "#4b5563" }}>Value: ${crypto.value}</p>
+              <button onClick={() => handleBuy(crypto.code)}  style={{
+                  marginTop: "8px",
+                  padding: "6px 12px",
+                  backgroundColor: "#3b82f6",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  marginRight: "8px",
+                }}>Buy</button>
+              <button onClick={() => handleSell(crypto.code)} style={{
+                  marginTop: "8px",
+                  padding: "6px 12px",
+                  backgroundColor: "#ef4444",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}>Sell</button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <button onClick={fetchUpdatedPrices} style={{
           marginTop: "24px",
           padding: "10px 16px",
           backgroundColor: "#16a34a",
@@ -182,10 +249,7 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
           border: "none",
           borderRadius: "8px",
           cursor: "pointer",
-        }}
-      >
-        Refresh Stock Prices
-      </button>
+        }}>Refresh Prices</button>
     </div>
   );
 };

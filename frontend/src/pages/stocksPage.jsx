@@ -53,6 +53,16 @@ const StocksPage = () => {
     setStocks([...stocks].sort((a, b) => option === "name" ? a.name.localeCompare(b.name) : a.price - b.price));
   };
 
+  const filteredCryptos = cryptos.filter((crypto) =>
+    crypto.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    crypto.code.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredStocks = stocks.filter((stock) =>
+    stock.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    stock.code.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
 
@@ -67,7 +77,7 @@ const StocksPage = () => {
           style={{ padding: "10px", border: "1px solid #ccc", borderRadius: "8px", flex: 1, fontSize: "16px" }}
         />
         <button onClick={() => handleSort("name")} style={{ marginLeft: "10px", color: 'white' }}>Sort by Name</button>
-        <button onClick={() => handleSort("price")} style={{ marginLeft: "10px", color: 'white'  }}>Sort by Price</button>
+        <button onClick={() => handleSort("price")} style={{ marginLeft: "10px", color: 'white' }}>Sort by Price</button>
       </div>
       <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-around" }}>
         <h2>Cryptocurrencies</h2>
@@ -75,7 +85,7 @@ const StocksPage = () => {
       </div>
       <div style={{ display: "flex", flexDirection: "row", gap: "70px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(200px, 1fr))", gap: "20px" }}>
-          {cryptos.map((crypto) => (
+          {filteredCryptos.map((crypto) => (
             <div
               key={crypto.code}
               onClick={() => navigate(`/stocksportfolio/${crypto.code}`)}
@@ -98,8 +108,7 @@ const StocksPage = () => {
           ))}
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(200px, 1fr))", gap: "20px" }}>
-          
-          {stocks.map((stock) => (
+          {filteredStocks.map((stock) => (
             <div
               key={stock.code}
               onClick={() => navigate(`/stocksportfolio/${stock.code}`)}
@@ -125,5 +134,6 @@ const StocksPage = () => {
     </div>
   );
 };
+
 
 export default StocksPage;

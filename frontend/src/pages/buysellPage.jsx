@@ -2,16 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import userServices from '../services/userServices';
 import stockServices from '../services/stockServices';
+import cryptoServices from '../services/cryptoServices'; // Add the crypto services
 import fetchingServices from '../services/fetchingServices';
 
 const Buysell = () => {
-  const { stockCode } = useParams(); 
+  const { stockCode, cryptoCode } = useParams(); 
   const [selectedStock, setSelectedStock] = useState(stockCode || '');
+  const [selectedCrypto, setSelectedCrypto] = useState(cryptoCode || '');
   const [quantity, setQuantity] = useState('');
   const [portfolio, setPortfolio] = useState([]);
+  const [cryptoPortfolio, setCryptoPortfolio] = useState([]); 
   const [balance, setBalance] = useState(0);
   const [username, setUsername] = useState('');
   const [stockPrice, setStockPrice] = useState(null);
+  const [cryptoPrice, setCryptoPrice] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -25,17 +29,25 @@ const Buysell = () => {
     }
   }, [selectedStock]);
 
+  useEffect(() => {
+    if (selectedCrypto) {
+      fetchCryptoPrice(selectedCrypto);
+    }
+  }, [selectedCrypto]);
+
   const fetchUserData = async () => {
     try {
-      const [balanceData, usernameData, portfolioData] = await Promise.all([
+      const [balanceData, usernameData, portfolioData, cryptoPortfolioData] = await Promise.all([
         userServices.getBalance(),
         userServices.getUsername(),
-        userServices.getStockPortfolio()
+        userServices.getStockPortfolio(),
+        userServices.getCryptoPortfolio()  
       ]);
 
       setBalance(balanceData);
       setUsername(usernameData);
       setPortfolio(portfolioData);
+      setCryptoPortfolio(cryptoPortfolioData);  
     } catch (error) {
       setError('Failed to fetch user data');
     }
@@ -53,9 +65,21 @@ const Buysell = () => {
     }
   };
 
+  const fetchCryptoPrice = async (code) => {
+    if (!code) return;
+    try {
+      const data = await fetchingServices.fetchCryptoPrice(code);
+      setCryptoPrice(data);
+      setError('');
+    } catch (error) {
+      setError('Failed to fetch crypto price');
+      setCryptoPrice(null);
+    }
+  };
+
   const handleTransaction = async (type) => {
-    if (!selectedStock || !quantity || !stockPrice) {
-      setError('Please fill in all fields');
+    if ((!selectedStock && !selectedCrypto) || !quantity || isNaN(parseFloat(quantity)) || parseFloat(quantity) <= 0 || (stockPrice === null && cryptoPrice === null)) {
+      setError('Please fill in all fields correctly');
       return;
     }
 
@@ -63,18 +87,28 @@ const Buysell = () => {
     setError('');
 
     try {
-      if (type === 'buy') {
-        await stockServices.buyStock(selectedStock, stockPrice, parseFloat(quantity));
-      } else {
-        await stockServices.sellStock(selectedStock, stockPrice, parseFloat(quantity));
+      if (selectedStock) {
+        if (type === 'buy') {
+          await stockServices.buyStock(selectedStock, stockPrice, parseFloat(quantity));
+        } else {
+          await stockServices.sellStock(selectedStock, stockPrice, parseFloat(quantity));
+        }
       }
-      
+
+      if (selectedCrypto) {
+        if (type === 'buy') {
+          await cryptoServices.buyCrypto(selectedCrypto, cryptoPrice, parseFloat(quantity));
+        } else {
+          await cryptoServices.sellCrypto(selectedCrypto, cryptoPrice, parseFloat(quantity));
+        }
+      }
+
       await fetchUserData();
       setQuantity('');
-      setSelectedStock('');
       setStockPrice(null);
+      setCryptoPrice(null); 
     } catch (error) {
-      setError(error.response?.data?.error || `Failed to ${type} stock`);
+      setError(error.response?.data?.error || `Failed to ${type} ${selectedStock ? 'stock' : 'crypto'}`);
     } finally {
       setLoading(false);
     }
@@ -92,7 +126,8 @@ const Buysell = () => {
     borderRadius: '8px',
     padding: '20px',
     marginBottom: '20px',
-    backgroundColor: 'white'
+    backgroundColor: 'white',
+    color: 'black'
   };
 
   const inputStyle = {
@@ -138,20 +173,26 @@ const Buysell = () => {
       </div>
 
       <div style={cardStyle}>
-        <h2>Trade Stocks</h2>
+        <h2>Trade Stocks / Crypto</h2>
         <div>
-          <label>Stock Code</label>
+          <label>Code</label>
           <input
             type="text"
-            value={selectedStock}
-            onChange={(e) => setSelectedStock(e.target.value.toUpperCase())}
-            placeholder="Enter stock code (e.g., AAPL)"
+            value={selectedStock || selectedCrypto}
+            onChange={(e) => {
+              const value = e.target.value.toUpperCase();
+              setSelectedStock(value);
+              setSelectedCrypto(value);
+            }}
+            placeholder="Enter stock or crypto code (e.g., AAPL, BTC)"
             style={inputStyle}
           />
         </div>
 
-        {stockPrice && (
-          <p>Current Price: ${stockPrice.toFixed(2)}</p>
+        {(stockPrice !== null || cryptoPrice !== null) && (
+          <p>
+            {selectedStock ? `Stock Price: $${stockPrice?.toFixed(2)}` : `Crypto Price: $${cryptoPrice?.toFixed(2)}`}
+          </p>
         )}
 
         <div>
@@ -167,37 +208,41 @@ const Buysell = () => {
           />
         </div>
 
-        {stockPrice && quantity && (
-          <p>Total Cost: ${(stockPrice * parseFloat(quantity || 0)).toFixed(2)}</p>
+        {(stockPrice !== null || cryptoPrice !== null) && quantity && !isNaN(parseFloat(quantity)) && (
+          <p>Total Cost: ${(selectedStock ? stockPrice : cryptoPrice) * parseFloat(quantity).toFixed(2)}</p>
         )}
 
-        <div>
-          <button 
-            onClick={() => handleTransaction('buy')}
-            disabled={loading}
-            style={buyButtonStyle}
-          >
-            {loading ? 'Processing...' : 'Buy'}
-          </button>
-          <button 
-            onClick={() => handleTransaction('sell')}
-            disabled={loading}
-            style={sellButtonStyle}
-          >
-            {loading ? 'Processing...' : 'Sell'}
-          </button>
-        </div>
+        <button onClick={() => handleTransaction('buy')} disabled={loading} style={buyButtonStyle}>
+          {loading ? 'Processing...' : 'Buy'}
+        </button>
+        <button onClick={() => handleTransaction('sell')} disabled={loading} style={sellButtonStyle}>
+          {loading ? 'Processing...' : 'Sell'}
+        </button>
       </div>
 
       <div style={cardStyle}>
-        <h2>Your Portfolio</h2>
+        <h2>Your Stock Portfolio</h2>
         {portfolio.length === 0 ? (
           <p>No stocks in portfolio</p>
         ) : (
           portfolio.map((item) => (
-            <div key={item.code} style={{ borderBottom: '1px solid #eee', padding: '10px 0' }}>
+            <div key={item.code} style={{ borderBottom: '1px solid #eee', padding: '10px 0', color: 'black' }}>
               <h3>{item.code}</h3>
               <p>{item.stock_count} shares</p>
+            </div>
+          ))
+        )}
+      </div>
+
+      <div style={cardStyle}>
+        <h2>Your Crypto Portfolio</h2>
+        {cryptoPortfolio.length === 0 ? (
+          <p>No cryptocurrencies in portfolio</p>
+        ) : (
+          cryptoPortfolio.map((item) => (
+            <div key={item.code} style={{ borderBottom: '1px solid #eee', padding: '10px 0', color: 'black' }}>
+              <h3>{item.code}</h3>
+              <p>{item.crypto_count} units</p>
             </div>
           ))
         )}
