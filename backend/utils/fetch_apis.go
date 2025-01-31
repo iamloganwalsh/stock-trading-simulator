@@ -252,3 +252,47 @@ func Fetch_prev_crypto(symbol string) ([]float64, error) {
 
 	return recentPrices, nil
 }
+
+func Fetch_prev_stock(symbol string) ([]float64, error) {
+	// Define the Yahoo Finance URL for stock data
+	url := fmt.Sprintf("https://query1.finance.yahoo.com/v7/finance/chart/%s?interval=1m&range=1d", symbol)
+
+	// Make the HTTP request
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch data: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %v", err)
+	}
+
+	// Parse the JSON response
+	var data YahooFinanceResponse
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse JSON: %v", err)
+	}
+
+	// Extract the prices for the last 20 minutes
+	if len(data.Chart.Result) == 0 || len(data.Chart.Result[0].Indicators.Quote) == 0 {
+		return nil, fmt.Errorf("no data found")
+	}
+
+	prices := data.Chart.Result[0].Indicators.Quote[0].Close
+	timestamps := data.Chart.Result[0].Timestamp
+
+	// Filter the last 20 minutes of data
+	var recentPrices []float64
+	currentTime := time.Now().Unix()
+	for i, timestamp := range timestamps {
+		if currentTime-timestamp <= 20*60 {
+			recentPrices = append(recentPrices, prices[i])
+		}
+	}
+
+	return recentPrices, nil
+}

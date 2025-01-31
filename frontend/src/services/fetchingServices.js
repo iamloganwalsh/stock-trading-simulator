@@ -10,8 +10,20 @@ const fetchCryptoPrevPrice = async (code) => {
     return response;
 }
 
+const fetchStockPrice = async (code) => {
+    const response = await api.get(`/stock/fetch/${code}`);
+    return response.data;
+}
+
+const fetchStockPrevPrice = async (code) => {
+    const response = await api.get(`/stock/fetch_prev/${code}`);
+    return response;
+}
+
 export default {
     fetchCryptoPrice,
     fetchCryptoPrevPrice,
+    fetchStockPrice,
+    fetchStockPrevPrice,
 }
 

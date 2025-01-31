@@ -6,6 +6,7 @@ import NavBar from './components/navbar.jsx';
 import Home from './pages/homePage.jsx';
 import AccountPage from './pages/accountPage.jsx';
 import CryptoView from './pages/cryptoView.jsx'
+import StockView from './pages/stockView.jsx'
 
 import fetchingServices from './services/fetchingServices.js'
 
@@ -62,6 +63,10 @@ function App() {
         <Route
         path="/view/crypto/:crypto_code?"
         element={<CryptoView />}
+        />
+        <Route 
+        path="/view/stock/:stock_code?"
+        element={<StockView />}
         />
       </Routes>
     </>

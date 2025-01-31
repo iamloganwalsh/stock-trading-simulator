@@ -1,5 +1,5 @@
 import React from 'react';
-import CryptoGraph from '../components/graph';
+import CryptoGraph from '../components/cryptoGraph';
 import { useParams } from "react-router-dom";
 import TradeInput from '../components/tradeInput';
 
