@@ -5,10 +5,14 @@ import userServices from './services/userServices.js';
 import NavBar from './components/navbar.jsx';
 import Home from './pages/homePage.jsx';
 import AccountPage from './pages/accountPage.jsx';
+import PortfolioPage from './pages/portfolioPage.jsx'
 import CryptoView from './pages/cryptoView.jsx'
 import StockView from './pages/stockView.jsx'
 
-import fetchingServices from './services/fetchingServices.js'
+
+import Trade from './pages/tradePage.jsx';
+import StocksPage from './pages/marketPage.jsx';
+import Buysell from './pages/buysellPage.jsx';
 
 function App() {
 
@@ -45,6 +49,17 @@ function App() {
       <NavBar />
       <Routes>
         <Route
+          path="/portfolio"
+          element={
+            <PortfolioPage
+              balance={balance}
+              profitloss={profitloss}
+              loading={loading}
+              error={error}
+            />
+          }
+        />
+        <Route
           path="/account"
           element={
             <AccountPage
@@ -55,6 +70,18 @@ function App() {
               error={error}
             />
           }
+        />
+        <Route
+          path="/trade"
+          element={<Trade />}
+        />
+        <Route
+          path="/market"
+          element={<StocksPage />}
+        />
+        <Route
+          path="/stocksportfolio/:stockCode"
+          element={<Buysell />}
         />
         <Route
           path="/"
