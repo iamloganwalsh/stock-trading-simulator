@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -40,10 +41,9 @@ func init() {
 }
 
 func Fetch_api(symbol string) (*StockQuote, error) {
-
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Println("Warning: Error loading .env file")
 	}
 
 	apiKey := os.Getenv("API_KEY")
@@ -57,32 +57,44 @@ func Fetch_api(symbol string) (*StockQuote, error) {
 	// Send GET request to the API
 	resp, err := http.Get(url)
 	if err != nil {
-		log.Fatalf("Failed to fetch data: %v", err)
+		return nil, fmt.Errorf("failed to fetch data: %v", err)
 	}
 	defer resp.Body.Close()
 
-	// Check if the response status code is OK
+	// Handle 429 Too Many Requests
+	if resp.StatusCode == http.StatusTooManyRequests {
+		return nil, fmt.Errorf("rate limit exceeded (429 Too Many Requests)")
+	}
+
+	// Handle non-OK HTTP status codes
 	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("Error: Received status code %d", resp.StatusCode)
+		return nil, fmt.Errorf("API request failed with status code %d", resp.StatusCode)
 	}
 
 	// Read the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalf("Failed to read response body: %v", err)
+		return nil, fmt.Errorf("failed to read response body: %v", err)
 	}
 
 	// Parse the JSON response into the StockQuote struct
 	var quote StockQuote
 	err = json.Unmarshal(body, &quote)
 	if err != nil {
-		log.Fatalf("Failed to parse JSON: %v", err)
+		return nil, fmt.Errorf("failed to parse JSON: %v", err)
 	}
 
 	return &quote, nil
 }
 
-// needs more development!!!
+func isRateLimitError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	errMsg := err.Error()
+	return strings.Contains(errMsg, "rate limit exceeded") || strings.Contains(errMsg, "429 Too Many Requests")
+}
 
 func Fetch_stock_price(symbol string) (float64, error) {
 	if redisClient != nil {
@@ -93,7 +105,15 @@ func Fetch_stock_price(symbol string) (float64, error) {
 	}
 	quote, err := Fetch_api(symbol)
 	if err != nil {
-		return 0, err
+
+		if isRateLimitError(err) && redisClient != nil {
+			cachedPrice, cacheErr := redisClient.GetCacheStockQuote(symbol)
+			if cacheErr == nil {
+				log.Println("Rate limit hit. Using cached stock price")
+				return cachedPrice, nil
+			}
+		}
+		return 0, fmt.Errorf("failed to fetch stock price: %w", err)
 	}
 
 	if redisClient != nil {
@@ -106,15 +126,25 @@ func Fetch_stock_price(symbol string) (float64, error) {
 }
 
 func Fetch_crypto_price(symbol string) (float64, error) {
+
 	if redisClient != nil {
 		price, err := redisClient.GetCacheCryptoQuote(symbol)
 		if err == nil && price != 0 {
 			return price, nil
 		}
 	}
+
 	quote, err := Fetch_api(symbol)
 	if err != nil {
-		return 0, err
+
+		if isRateLimitError(err) && redisClient != nil {
+			cachedPrice, cacheErr := redisClient.GetCacheCryptoQuote(symbol)
+			if cacheErr == nil {
+				log.Println("Rate limit hit. Using cached crypto price.")
+				return cachedPrice, nil
+			}
+		}
+		return 0, fmt.Errorf("failed to fetch crypto price: %w", err)
 	}
 
 	if redisClient != nil {

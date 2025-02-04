@@ -80,10 +80,6 @@ function App() {
           element={<StocksPage />}
         />
         <Route
-          path="/stocksportfolio/:stockCode"
-          element={<Buysell />}
-        />
-        <Route
           path="/"
           element={<Home />}
         />

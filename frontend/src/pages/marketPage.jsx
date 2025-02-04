@@ -14,14 +14,29 @@ const StocksPage = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const cryptoSymbols = ["BTC", "ETH", "XRP", "USDT", "SOL", "BNB", "USDC", "DOGE"];
-        const cryptoNames = ["Bitcoin", "Ethereum", "XRP", "USDT", "Solana", "BNB", "USD Coin", "Dogecoin"];
+        const cryptoSymbols = ["BTC", "ETH", "XRP", "LTC", "SOL", "BNB", "ADA", "DOGE"];
+        const cryptoNames = ["Bitcoin", "Ethereum", "XRP", "Litecoin", "Solana", "BNB", "Cardano", "Dogecoin"];
+        const convertToFinnhubCode = (crypto_code) => {
+          const cryptoCode = (crypto_code || "BTC").toUpperCase();
+        
+          if (cryptoCode.includes("-USD")) {
+            return `BINANCE:${cryptoCode.replace("-USD", "")}USDT`;
+          } 
+          if (cryptoCode.startsWith("BINANCE:") && cryptoCode.endsWith("USDT")) {
+            return cryptoCode;
+          }
+          
+          return `BINANCE:${cryptoCode}USDT`;
+        };
+        
+        const finnhubSymbols = cryptoSymbols.map(convertToFinnhubCode);
+        
         const cryptoPrices = await Promise.all(
-          cryptoSymbols.map((symbol) => fetchingServices.fetchCryptoPrice(symbol))
+          finnhubSymbols.map((finnhub_code) => fetchingServices.fetchCryptoPrice(finnhub_code))
         );
 
-        const stockSymbols = ["AAPL", "GOOG", "GOOGL", "AMZN", "MSFT", "TSLA", "NVDA", "META"];
-        const stockNames = ["Apple Inc", "Alphabet Inc", "Alphabet Inc", "Amazon.com Inc", "Microsoft Corp", "Tesla Inc", "NVIDIA Corp", "Meta Platforms Inc"];
+        const stockSymbols = ["AAPL", "GOOG", "TEAM", "AMZN", "MSFT", "TSLA", "NVDA", "META"];
+        const stockNames = ["Apple Inc", "Alphabet Inc", "Atlassian Corp", "Amazon.com Inc", "Microsoft Corp", "Tesla Inc", "NVIDIA Corp", "Meta Platforms Inc"];
         const stockPrices = await Promise.all(
           stockSymbols.map((symbol) => fetchingServices.fetchStockPrice(symbol))
         );
@@ -38,7 +53,7 @@ const StocksPage = () => {
           price: stockPrices[index]
         })));
       } catch (err) {
-        setError("Unable to load market data.");
+        setError("Unable to load market data." + err);
       } finally {
         setLoading(false);
       }
@@ -88,7 +103,7 @@ const StocksPage = () => {
           {filteredCryptos.map((crypto) => (
             <div
               key={crypto.code}
-              onClick={() => navigate(`/stocksportfolio/${crypto.code}`)}
+              onClick={() => navigate(`/view/crypto/${crypto.code}`)}
               style={{
                 backgroundColor: "#fff",
                 padding: "20px",
@@ -97,7 +112,8 @@ const StocksPage = () => {
                 textAlign: "center",
                 color: "#242424",
                 marginBottom: "10px",
-                height: "fit-content"
+                height: "fit-content",
+                cursor: "pointer"
               }}
             >
               <h3>{crypto.code}</h3>
@@ -112,7 +128,7 @@ const StocksPage = () => {
           {filteredStocks.map((stock) => (
             <div
               key={stock.code}
-              onClick={() => navigate(`/stocksportfolio/${stock.code}`)}
+              onClick={() => navigate(`/view/stock/${stock.code}`)}
               style={{
                 backgroundColor: "#fff",
                 padding: "20px",
@@ -121,7 +137,8 @@ const StocksPage = () => {
                 textAlign: "center",
                 color: "#242424",
                 marginBottom: "10px",
-                height: "fit-content"
+                height: "fit-content",
+                cursor: "pointer"
               }}
             >
               <h3>{stock.code}</h3>

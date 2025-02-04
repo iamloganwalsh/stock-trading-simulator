@@ -43,7 +43,7 @@ func FetchStockHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	code := vars["code"]
 
-	price, err := utils.Fetch_crypto_price(code)
+	price, err := utils.Fetch_stock_price(code)
 	if err != nil {
 		http.Error(w, "Internal server error: "+err.Error(), http.StatusInternalServerError)
 		return
