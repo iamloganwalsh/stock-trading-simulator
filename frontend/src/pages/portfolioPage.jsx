@@ -13,6 +13,20 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
 
   const navigate = useNavigate();
 
+  const convertToFinnhubCode = (crypto_code) => {
+    const cryptoCode = (crypto_code || "BTC").toUpperCase();
+  
+    if (cryptoCode.includes("-USD")) {
+      return `BINANCE:${cryptoCode.replace("-USD", "")}USDT`;
+    } 
+    if (cryptoCode.startsWith("BINANCE:") && cryptoCode.endsWith("USDT")) {
+      return cryptoCode;
+    }
+    
+    return `BINANCE:${cryptoCode}USDT`;
+  };
+  
+
   useEffect(() => {
     const fetchAssets = async () => {
       try {
@@ -30,7 +44,9 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
         const validCrypto = Array.isArray(cryptoData) ? cryptoData : [];
         const updatedCrypto = await Promise.all(
           validCrypto.map(async (crypto) => {
-            const newPrice = await fetchingServices.fetchCryptoPrice(crypto.code);
+            const finnhub_code = convertToFinnhubCode(crypto.code);
+            const fetchedPrice = await fetchingServices.fetchCryptoPrice(finnhub_code);
+            const newPrice = fetchedPrice * crypto.crypto_count;
             return { ...crypto, value: newPrice };
           })
         );
@@ -65,9 +81,12 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
 
       const updatedCrypto = await Promise.all(
         portfolio.crypto.map(async (crypto) => {
-          const newPrice = await fetchingServices.fetchCryptoPrice(crypto.code);
+          const finnhub_code = convertToFinnhubCode(crypto.code);
+          const fetchedPrice = await fetchingServices.fetchCryptoPrice(finnhub_code);
+          const newPrice = fetchedPrice * crypto.crypto_count;
           return { ...crypto, value: newPrice };
         })
+        
       );
 
       setPortfolio((prevPortfolio) => ({
@@ -80,12 +99,12 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
     }
   };
 
-  const handleBuy = (stockCode) => {
-    navigate(`/stocksportfolio/${stockCode}`);
+  const handleRedirectStock = (stockCode) => {
+    navigate(`/view/stock/${stockCode}`);
   };
 
-  const handleSell = (stockCode) => {
-    navigate(`/stocksportfolio/${stockCode}`);
+  const handleRedirectCrypto = (cryptoCode) => {
+    navigate(`/view/crypto/${cryptoCode}`);
   };
 
   if (loading) return <div>Loading...</div>;
@@ -156,6 +175,7 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
                 transition: "transform 0.2s",
                 color: "#242424",
                 borderRadius: "4px",
+                cursor: "pointer"
               }}
               onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
               onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
@@ -163,7 +183,7 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
               <h3 style={{ fontSize: "18px", fontWeight: "bold" }}>{stock.code}</h3>
               <p style={{ color: "#4b5563" }}>Shares: {stock.stock_count}</p>
               <p style={{ color: "#4b5563" }}>Value: ${stock.value}</p>
-              <button onClick={() => handleBuy(stock.code)}  style={{
+              <button onClick={() => handleRedirectStock(stock.code)}  style={{
                   marginTop: "8px",
                   padding: "6px 12px",
                   backgroundColor: "#3b82f6",
@@ -173,7 +193,7 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
                   cursor: "pointer",
                   marginRight: "8px",
                 }}>Buy</button>
-              <button onClick={() => handleSell(stock.code)} style={{
+              <button onClick={() => handleRedirectStock(stock.code)} style={{
                   marginTop: "8px",
                   padding: "6px 12px",
                   backgroundColor: "#ef4444",
@@ -210,6 +230,7 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
                 transition: "transform 0.2s",
                 color: "#242424",
                 borderRadius: "4px",
+                cursor: "pointer"
               }}
               onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
               onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
@@ -217,7 +238,7 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
               <h3 style={{ fontSize: "18px", fontWeight: "bold" }}>{crypto.code}</h3>
               <p style={{ color: "#4b5563" }}>Coins: {crypto.crypto_count}</p>
               <p style={{ color: "#4b5563" }}>Value: ${crypto.value}</p>
-              <button onClick={() => handleBuy(crypto.code)}  style={{
+              <button onClick={() => handleRedirectCrypto(crypto.code)}  style={{
                   marginTop: "8px",
                   padding: "6px 12px",
                   backgroundColor: "#3b82f6",
@@ -227,7 +248,7 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
                   cursor: "pointer",
                   marginRight: "8px",
                 }}>Buy</button>
-              <button onClick={() => handleSell(crypto.code)} style={{
+              <button onClick={() => handleRedirectCrypto(crypto.code)} style={{
                   marginTop: "8px",
                   padding: "6px 12px",
                   backgroundColor: "#ef4444",
