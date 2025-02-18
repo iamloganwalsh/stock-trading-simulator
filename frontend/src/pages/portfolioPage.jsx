@@ -117,6 +117,8 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
           gap: "24px",
+          maxWidth: "1200px",
+          marginInline: "auto",
         }}
       >
         <div
@@ -125,7 +127,7 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
             boxShadow: "0 2px 4px rgba(70, 167, 25, 0.1)",
             padding: "16px",
             textAlign: "center",
-            borderRadius: "4px",
+            borderRadius: "10px",
           }}
         >
           <h2 style={{ fontSize: "20px", fontWeight: "bold", color: "#242424" }}>Total Balance</h2>
@@ -137,7 +139,7 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
             boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
             padding: "16px",
             textAlign: "center",
-            borderRadius: "4px",
+            borderRadius: "10px",
           }}
         >
           <h2 style={{ fontSize: "20px", fontWeight: "bold", color: "#242424" }}>Profit/Loss</h2>
@@ -174,7 +176,7 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
                 textAlign: "center",
                 transition: "transform 0.2s",
                 color: "#242424",
-                borderRadius: "4px",
+                borderRadius: "10px",
                 cursor: "pointer"
               }}
               onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
@@ -229,7 +231,7 @@ const Portfolio = ({ balance, profitloss, loading, error }) => {
                 textAlign: "center",
                 transition: "transform 0.2s",
                 color: "#242424",
-                borderRadius: "4px",
+                borderRadius: "10px",
                 cursor: "pointer"
               }}
               onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
