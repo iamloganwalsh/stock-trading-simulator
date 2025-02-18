@@ -6,9 +6,13 @@ import TradeInput from '../components/tradeInput';
 const StockView = () => {
   const styles = {
     container: {
-      marginLeft: '120px', // Offset for the fixed NavBar
+      display: 'flex',
+      justifyContent: 'center',
+      flexDirection: 'column',
       padding: '20px',
-      width: '100%',
+      width: '100% - 100px',
+      marginLeft: '100px',
+      alignItems: 'center',
     },
     heading: {
       fontSize: '24px',
@@ -25,10 +29,8 @@ const StockView = () => {
   return (
     <div style={styles.container}>
 
-      <div>
-        <StockGraph stock_name={stockCode} yahoo_code={stockCode} finnhub_code={stockCode} />
-        <TradeInput type="stock" code={stockCode} finnhub_code={stockCode}/>
-      </div>
+      <StockGraph stock_name={stockCode} yahoo_code={stockCode} finnhub_code={stockCode} />
+      <TradeInput type="stock" code={stockCode} finnhub_code={stockCode}/>
       
     </div>
     

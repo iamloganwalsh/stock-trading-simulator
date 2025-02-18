@@ -116,7 +116,7 @@ const CryptoGraph = ({crypto_name, yahoo_code, finnhub_code}) => {
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div style={{ position: 'relative', width: '50%', height: '100%' }}>
 
       {currPrice && (
         <div 

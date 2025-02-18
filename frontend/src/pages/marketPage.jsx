@@ -82,7 +82,7 @@ const StocksPage = () => {
   if (error) return <div>{error}</div>;
 
   return (
-    <div style={{ padding: "24px", maxWidth: "1200px", margin: "0 0 0 50px" }}>
+    <div style={{ padding: "24px", margin: "0 0 0 100px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
         <input
           type="text"
@@ -98,7 +98,7 @@ const StocksPage = () => {
         <h2>Cryptocurrencies</h2>
         <h2>Stocks</h2>
       </div>
-      <div style={{ display: "flex", flexDirection: "row", gap: "70px" }}>
+      <div style={{ display: "flex", flexDirection: "row", gap: "70px", justifyContent: "center" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(200px, 1fr))", gap: "20px", height: "fit-content" }}>
           {filteredCryptos.map((crypto) => (
             <div

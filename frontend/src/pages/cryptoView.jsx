@@ -6,9 +6,13 @@ import TradeInput from '../components/tradeInput';
 const CryptoView = () => {
   const styles = {
     container: {
-      marginLeft: '120px', // Offset for the fixed NavBar
+      display: 'flex',
+      justifyContent: 'center',
+      flexDirection: 'column',
       padding: '20px',
-      width: '100%',
+      width: '100% - 100px',
+      marginLeft: '100px',
+      alignItems: 'center',
     },
     heading: {
       fontSize: '24px',
@@ -49,10 +53,8 @@ const CryptoView = () => {
   return (
     <div style={styles.container}>
 
-      <div>
-        <CryptoGraph crypto_name={crypto_name} yahoo_code={yahoo_code} finnhub_code={finnhub_code} />
-        <TradeInput type="crypto" code={crypto_name} finnhub_code={finnhub_code}/>
-      </div>
+      <CryptoGraph crypto_name={crypto_name} yahoo_code={yahoo_code} finnhub_code={finnhub_code} />
+      <TradeInput type="crypto" code={crypto_name} finnhub_code={finnhub_code}/>
       
     </div>
     
