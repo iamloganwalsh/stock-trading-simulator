@@ -149,5 +149,11 @@ func GetTradeHistory(db *sql.DB) ([]trade_history_data, error) {
 		return nil, err
 	}
 
+	// Reverse array so most recent is at the top
+	n := len(history_items)
+	for i := 0; i < n/2; i++ {
+		history_items[i], history_items[n-1-i] = history_items[n-1-i], history_items[i]
+	}
+
 	return history_items, nil
 }

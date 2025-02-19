@@ -53,6 +53,12 @@ const NavBar = () => {
         </svg>
         Home
       </Link>
+      <Link to="/market" style={getLinkStyle('/market')}>
+        <svg viewBox="0 0 24 24" style={styles.icon} fill="currentColor">
+          <path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z" />
+        </svg>
+        Market
+      </Link>
       <Link to="/portfolio" style={getLinkStyle('/portfolio')}>
         <svg viewBox="0 0 24 24" style={styles.icon} fill="currentColor">
           <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z" />
@@ -63,13 +69,7 @@ const NavBar = () => {
         <svg viewBox="0 0 24 24" style={styles.icon} fill="currentColor">
           <path d="M8 9l-4 4 4 4v-3h8v3l4-4-4-4v3H8V9z" />
         </svg>
-        Trade
-      </Link>
-      <Link to="/market" style={getLinkStyle('/market')}>
-        <svg viewBox="0 0 24 24" style={styles.icon} fill="currentColor">
-          <path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z" />
-        </svg>
-        Market
+        History
       </Link>
       <Link to="/account" style={getLinkStyle('/account')}>
         <svg viewBox="0 0 24 24" style={styles.icon} fill="currentColor">
