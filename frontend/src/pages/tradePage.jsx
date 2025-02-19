@@ -20,7 +20,11 @@ const TradeHistory = () => {
         setProfitLoss(pl);
       } catch (err) {
         console.error("Failed to fetch trade history:", err);
-        setError("Unable to load trade history. Please try again later.");
+        if (err && err.message && err.message == 'Network Error') {
+          setError("Unable to load trade history. Please try again later.");
+        } else {
+          setError("Trade history is empty.")
+        }
       }
     };
 
@@ -28,11 +32,11 @@ const TradeHistory = () => {
   }, []);
 
   if (error) {
-    return <div>{error}</div>;
+    return <div style={{marginLeft: '100px'}}>{error}</div>;
   }
 
   return (
-    <div style={{ padding: "24px", marginLeft: "220px" }}> 
+    <div style={{ padding: "24px", marginLeft: "100px" }}> 
       <div>
         <h2 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "16px" }}>Your Trades History</h2>
         <div

@@ -4,7 +4,7 @@ import React from 'react';
 const Home = () => {
   const styles = {
     container: {
-      marginLeft: '120px', // Offset for the fixed NavBar
+      marginLeft: '100px', // Offset for the fixed NavBar
       padding: '20px',
     },
     heading: {

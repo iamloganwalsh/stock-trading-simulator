@@ -2,7 +2,7 @@ import React from "react";
 
 function Account({ balance, username, profitloss, loading, error }) {
   return (
-    <div style={{ padding: '20px', marginLeft: '80px' }}>
+    <div style={{ padding: '20px', marginLeft: '100px' }}>
       {loading ? (
         <p>Loading user data...</p>
       ) : error ? (
