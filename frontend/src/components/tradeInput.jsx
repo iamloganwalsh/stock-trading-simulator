@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import fetchingServices from '../services/fetchingServices';
 import cs from '../services/cryptoServices';
-//import ss from '../services/stockServices';
+import ss from '../services/stockServices';
 
 const TradeInput = ({ type, code, finnhub_code }) => {
   const [amount, setAmount] = useState(""); // Allow empty string initially
@@ -34,14 +34,17 @@ const TradeInput = ({ type, code, finnhub_code }) => {
     }
 
     try {
-      const response =
-        type === "crypto"
-          ? await (action === "buy"
-              ? cs.buyCrypto(code, currPrice, parsedAmount)
-              : cs.sellCrypto(code, currPrice, parsedAmount))
-          : await (action === "buy"
-              ? ss.buyStock(code, currPrice, parsedAmount)
-              : ss.sellStock(code, currPrice, parsedAmount));
+      let response;
+      
+      if (type === "crypto") {
+        response = action === "buy"
+          ? await cs.buyCrypto(code, currPrice, parsedAmount)
+          : await cs.sellCrypto(code, currPrice, parsedAmount);
+      } else {
+        response = action === "buy"
+          ? await ss.buyStock(code, currPrice, parsedAmount)
+          : await ss.sellStock(code, currPrice, parsedAmount);
+      }
 
       if (response?.status !== 201) {
         console.log(response);

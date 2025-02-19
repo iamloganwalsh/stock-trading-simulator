@@ -6,7 +6,7 @@ const buyStock = async (code, cost, amount) => {
         cost: cost,
         stock_count: amount,
     })
-    return response.data;
+    return response;
 }
 
 const sellStock = async (code, cost, amount) => {
@@ -15,7 +15,7 @@ const sellStock = async (code, cost, amount) => {
         cost: cost,
         stock_count: amount,
     })
-    return response.data
+    return response;
 }
 
 export default {
