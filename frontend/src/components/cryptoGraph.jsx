@@ -124,8 +124,7 @@ const CryptoGraph = ({crypto_name, yahoo_code, finnhub_code}) => {
             position: 'absolute',
             top: '-15px',
             left: '0',
-            color: 'white',
-            padding: '5px 10px',
+            padding: '5px 0px',
             borderRadius: '5px',
             fontSize: '16px',
           }}

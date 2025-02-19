@@ -124,7 +124,6 @@ const StockGraph = ({stock_name, yahoo_code, finnhub_code}) => {
             position: 'absolute',
             top: '-15px',
             left: '0',
-            color: 'white',
             padding: '5px 10px',
             borderRadius: '5px',
             fontSize: '16px',

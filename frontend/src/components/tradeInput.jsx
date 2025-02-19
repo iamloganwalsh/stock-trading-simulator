@@ -58,19 +58,42 @@ const TradeInput = ({ type, code, finnhub_code }) => {
   return (
     <div className="p-4 border rounded-lg shadow-lg w-80 bg-white">
 
-      <input
-        type="number"
-        className="w-full p-2 mt-2 border rounded"
-        placeholder="Enter amount"
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)} // Store raw string input
-      />
+<input
+  type="number"
+  placeholder="Enter amount"
+  value={amount}
+  onChange={(e) => setAmount(e.target.value)}
+  style={{
+    width: "100% - 20px",
+    padding: "10px",
+    marginTop: "8px",
+    border: "1px solid #ccc",
+    borderRadius: "8px",
+    fontSize: "16px",
+    outline: "none",
+    transition: "border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out",
+  }}
+  onFocus={(e) => {
+    e.target.style.borderColor = "#007bff";
+    e.target.style.boxShadow = "0 0 5px rgba(0, 123, 255, 0.5)";
+  }}
+  onBlur={(e) => {
+    e.target.style.borderColor = "#ccc";
+    e.target.style.boxShadow = "none";
+  }}
+/>
+
+
 
       <p className="mt-2 text-gray-700">
         Total: {isNaN(amount * currPrice) ? "NaN" : `$${(currPrice * amount).toFixed(2)}`}
       </p>
 
-      <div className="flex justify-between mt-4">
+      <div style={{
+        display: "flex",
+        justifyContent: "center",
+        gap: "15px",
+      }}>
         <button
           className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
           onClick={() => handleTrade("buy")}

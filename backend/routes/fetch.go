@@ -69,6 +69,7 @@ func FetchCryptoPrevHandler(w http.ResponseWriter, r *http.Request) {
 	code := vars["code"]
 
 	price, err := utils.Fetch_prev_crypto(code)
+
 	if err != nil {
 		http.Error(w, "Internal server error: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -107,4 +108,3 @@ func FetchStockPrevHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to write response: "+err.Error(), http.StatusInternalServerError)
 	}
 }
-
