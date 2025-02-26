@@ -74,7 +74,7 @@ func TestGetBalance(t *testing.T) {
 }
 
 func TestGetProfitLoss(t *testing.T) {
-	profit_loss, err := GetProfitLoss(testDB)
+	profit_loss, err := GetInvestment(testDB)
 	if err != nil {
 		t.Fatalf("Failed to retrieve profit loss: %v", err)
 	}

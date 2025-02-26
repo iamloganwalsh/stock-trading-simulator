@@ -6,7 +6,7 @@ import (
 
 func InitUser(db *sql.DB, username string) error {
 
-	query := `INSERT INTO user_data (username, balance, profit_loss) VALUES (?, ?, ?)`
+	query := `INSERT INTO user_data (username, balance, investment) VALUES (?, ?, ?)`
 	_, err := db.Exec(query, username, 0.0, 0.0)
 	return err
 }
@@ -41,11 +41,11 @@ func GetBalance(db *sql.DB) (float64, error) {
 	return balance, nil
 }
 
-func GetProfitLoss(db *sql.DB) (float64, error) {
+func GetInvestment(db *sql.DB) (float64, error) {
 
-	var profit_loss float64
-	query := `SELECT profit_loss FROM user_data LIMIT 1` // Should only be 1 entry anyways
-	err := db.QueryRow(query).Scan(&profit_loss)
+	var investment float64
+	query := `SELECT investment FROM user_data LIMIT 1` // Should only be 1 entry anyways
+	err := db.QueryRow(query).Scan(&investment)
 
 	if err == sql.ErrNoRows {
 		return 0, nil // No rows found, should never be possible but who knows
@@ -53,7 +53,7 @@ func GetProfitLoss(db *sql.DB) (float64, error) {
 		return 0, err // Other errors
 	}
 
-	return profit_loss, nil
+	return investment, nil
 }
 
 type CryptoData struct {

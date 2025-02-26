@@ -40,7 +40,7 @@ func InitDB(db *sql.DB) error {
 	CREATE TABLE IF NOT EXISTS user_data (
 		username TEXT NOT NULL,
 		balance REAL NOT NULL,
-		profit_loss REAL NOT NULL
+		investment REAL NOT NULL
 	);`
 
 	createTradeHistoryTableSQL := `

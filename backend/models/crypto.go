@@ -69,6 +69,13 @@ func BuyCrypto(db *sql.DB, code string, cost float64, crypto_count float64) erro
 		return err
 	}
 
+	// Update user investment
+	updateInvestmentQuery := `UPDATE user_data SET investment = investment + ? WHERE rowid = 1`
+	_, err = tx.Exec(updateInvestmentQuery, cost)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -135,6 +142,13 @@ func SellCrypto(db *sql.DB, code string, price float64, sell_quantity float64) e
 	// Update user balance
 	updateBalanceQuery := `UPDATE user_data SET balance = balance + ? WHERE rowid = 1`
 	_, err = tx.Exec(updateBalanceQuery, price*sell_quantity)
+	if err != nil {
+		return err
+	}
+
+	// Update user investment
+	updateInvestmentQuery := `UPDATE user_data SET investment = investment - ? WHERE rowid = 1`
+	_, err = tx.Exec(updateInvestmentQuery, price*sell_quantity)
 	if err != nil {
 		return err
 	}

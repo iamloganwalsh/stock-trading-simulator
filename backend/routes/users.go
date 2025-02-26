@@ -82,24 +82,24 @@ func GetBalanceHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetProfitLossHandler(w http.ResponseWriter, r *http.Request) {
+func GetInvestmentHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method should be GET", http.StatusMethodNotAllowed)
 		return
 	}
 	db, _ := config.ConnectDB()
-	profit_loss, err := models.GetProfitLoss(db)
+	investment, err := models.GetInvestment(db)
 	if err != nil {
 		http.Error(w, "Internal server error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	profit_loss_string := fmt.Sprintf("%f", profit_loss)
+	investment_string := fmt.Sprintf("%f", investment)
 
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	if _, err := w.Write([]byte(profit_loss_string)); err != nil {
+	if _, err := w.Write([]byte(investment_string)); err != nil {
 		http.Error(w, "Failed to write response: "+err.Error(), http.StatusInternalServerError)
 	}
 }

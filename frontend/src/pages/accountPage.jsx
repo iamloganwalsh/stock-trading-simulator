@@ -1,6 +1,6 @@
 import React from "react";
 
-function Account({ balance, username, profitloss, loading, error }) {
+function Account({ balance, username, investment, loading, error }) {
   return (
     <div style={{ padding: '20px', marginLeft: '80px' }}>
       {loading ? (
@@ -12,7 +12,7 @@ function Account({ balance, username, profitloss, loading, error }) {
           <h1>Profile</h1>
           <p>Username: {username}</p>
           <p>Balance: {balance}</p>
-          <p>Profit / Loss: {profitloss}</p>
+          <p>Investment: {investment}</p>
         </>
       )}
     </div>

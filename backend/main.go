@@ -40,7 +40,7 @@ func main() {
 	router.HandleFunc("/user/create", routes.InitUserHandler).Methods("POST")
 	router.HandleFunc("/user/username", routes.GetUsernameHandler).Methods("GET")
 	router.HandleFunc("/user/balance", routes.GetBalanceHandler).Methods("GET")
-	router.HandleFunc("/user/profit_loss", routes.GetProfitLossHandler).Methods("GET")
+	router.HandleFunc("/user/investment", routes.GetInvestmentHandler).Methods("GET")
 	router.HandleFunc("/user/crypto_portfolio", routes.GetCryptoPortfolioHandler).Methods("GET")
 	router.HandleFunc("/user/stock_portfolio", routes.GetStockPortfolioHandler).Methods("GET")
 	router.HandleFunc("/user/trade_history", routes.GetTradeHistoryHandler).Methods("GET")

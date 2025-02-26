@@ -18,22 +18,22 @@ function App() {
 
   const [balance, setBalance] = useState(null)
   const [username, setUsername] = useState(null)
-  const [profitloss, setProfitLoss] = useState(null)
+  const [investment, setinvestment] = useState(null)
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(null)
 
   useEffect(() => {
     const fetchUserData = async () => {
       try{
-        const [balanceData, usernameData, profitlossData] = await Promise.all([
+        const [balanceData, usernameData, investmentData] = await Promise.all([
           userServices.getBalance(),
           userServices.getUsername(),
-          userServices.getProfitLoss(),
+          userServices.getInvestment(),
         ]);
 
         setBalance(balanceData);
         setUsername(usernameData);
-        setProfitLoss(profitlossData)
+        setinvestment(investmentData)
       } catch (err) {
         setError('Failed to fetch user data:', err);
       } finally {
@@ -53,7 +53,7 @@ function App() {
           element={
             <PortfolioPage
               balance={balance}
-              profitloss={profitloss}
+              investment={investment}
               loading={loading}
               error={error}
             />
@@ -65,7 +65,7 @@ function App() {
             <AccountPage
               balance={balance}
               username={username}
-              profitloss={profitloss}
+              investment={investment}
               loading={loading}
               error={error}
             />
