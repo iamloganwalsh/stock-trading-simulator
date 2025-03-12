@@ -9,19 +9,8 @@ import (
 	"github.com/iamloganwalsh/stock-trading-simulator/config"
 	"github.com/iamloganwalsh/stock-trading-simulator/routes"
 	"github.com/iamloganwalsh/stock-trading-simulator/utils"
+	"github.com/rs/cors"
 )
-
-// Struct to parse the response for stock quotes
-type StockQuote struct {
-	CurrentPrice     float64 `json:"c"`
-	Change           float64 `json:"d"`
-	PercentageChange float64 `json:"dp"`
-	High             float64 `json:"h"`
-	Low              float64 `json:"l"`
-	Open             float64 `json:"o"`
-	PreviousClose    float64 `json:"pc"`
-	Timestamp        int64   `json:"t"` // Unix timestamp
-}
 
 func main() {
 
@@ -38,6 +27,13 @@ func main() {
 		log.Fatalf("Failed to initialize the database: %v", err)
 	}
 
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:5173"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization"},
+		AllowCredentials: true,
+	})
+
 	router := mux.NewRouter()
 
 	// User routes
@@ -47,6 +43,7 @@ func main() {
 	router.HandleFunc("/user/profit_loss", routes.GetProfitLossHandler).Methods("GET")
 	router.HandleFunc("/user/crypto_portfolio", routes.GetCryptoPortfolioHandler).Methods("GET")
 	router.HandleFunc("/user/stock_portfolio", routes.GetStockPortfolioHandler).Methods("GET")
+	router.HandleFunc("/user/trade_history", routes.GetTradeHistoryHandler).Methods("GET")
 
 	// Trade routes (Crypto & Stock)
 	router.HandleFunc("/crypto/buy", routes.BuyCryptoHandler).Methods("POST")
@@ -54,20 +51,27 @@ func main() {
 	router.HandleFunc("/stock/buy", routes.BuyStockHandler).Methods("POST")
 	router.HandleFunc("/stock/sell", routes.SellStockHandler).Methods("POST") // Could DELETE or UPDATE so POST for versatility
 
-	stockPrice, err := utils.Fetch_api("AAPL")
+	// Fetching routes
+	router.HandleFunc("/crypto/fetch/{code}", routes.FetchCryptoHandler).Methods("GET")
+	router.HandleFunc("/stock/fetch/{code}", routes.FetchStockHandler).Methods("GET")
+	router.HandleFunc("/crypto/fetch_prev/{code}", routes.FetchCryptoPrevHandler).Methods("GET")
+	router.HandleFunc("/stock/fetch_prev/{code}", routes.FetchStockPrevHandler).Methods("GET")
+
+	stockPrice, err := utils.Fetch_stock_price("AAPL")
 	if err != nil {
 		fmt.Println("Error fetching stock data:", err)
 	} else {
 		fmt.Printf("Current stock price of AAPL: $%2.f\n", stockPrice)
 	}
 
-	cryptoPrice, err := utils.Fetch_api("BINANCE:BTCUSDT")
+	cryptoPrice, err := utils.Fetch_crypto_price("BINANCE:BTCUSDT")
 	if err != nil {
 		fmt.Println("Error fetching crypto data:", err)
 	} else {
 		fmt.Printf("Current crypto price of BTC/USDT: $%2.f\n", cryptoPrice)
 	}
 
+	handler := c.Handler(router)
 	log.Println("Starting server on localhost:3000...")
-	log.Fatal(http.ListenAndServe("localhost:3000", router))
+	log.Fatal(http.ListenAndServe("localhost:3000", handler))
 }

@@ -26,7 +26,7 @@ func TestMain(m *testing.M) {
 	code := m.Run()
 
 	testDB.Close()
-	os.Remove("./tests.db")
+	//os.Remove("./tests.db")
 	os.Exit(code)
 }
 
@@ -85,7 +85,6 @@ func TestGetCryptoPortfolio(t *testing.T) {
 
 	type CryptoData struct {
 		Code         string  `json:"code"`
-		Invested     float64 `json:"invested"`
 		Crypto_count float64 `json:"crypto_count"`
 	}
 
@@ -97,8 +96,8 @@ func TestGetCryptoPortfolio(t *testing.T) {
 	}
 	assert.EqualValues(t, expected, crypto_items, "Crypto data should not exist currently")
 
-	testDB.Exec("INSERT INTO crypto (code, invested, crypto_count) VALUES (?, ?, ?)", "TEST1", 100, 20)
-	testDB.Exec("INSERT INTO crypto (code, invested, crypto_count) VALUES (?, ?, ?)", "TEST2", 50, 10)
+	testDB.Exec("INSERT INTO crypto (code, crypto_count) VALUES (?, ?)", "TEST1", 20)
+	testDB.Exec("INSERT INTO crypto (code, crypto_count) VALUES (?, ?)", "TEST2", 10)
 
 	crypto_items, err = GetCryptoPortfolio(testDB)
 	if err != nil {
@@ -106,8 +105,8 @@ func TestGetCryptoPortfolio(t *testing.T) {
 	}
 
 	expected = []CryptoData{
-		{Code: "TEST1", Invested: 100, Crypto_count: 20},
-		{Code: "TEST2", Invested: 50, Crypto_count: 10},
+		{Code: "TEST1", Crypto_count: 20},
+		{Code: "TEST2", Crypto_count: 10},
 	}
 
 	assert.EqualValues(t, expected, crypto_items, "Crypto data does not match expected values")
@@ -118,7 +117,6 @@ func TestGetStockPortfolio(t *testing.T) {
 
 	type StockData struct {
 		Code        string  `json:"code"`
-		Invested    float64 `json:"invested"`
 		Stock_count float64 `json:"stock_count"`
 	}
 
@@ -130,8 +128,8 @@ func TestGetStockPortfolio(t *testing.T) {
 	}
 	assert.EqualValues(t, expected, stock_items, "Stock data should not exist currently")
 
-	testDB.Exec("INSERT INTO stock (code, invested, stock_count) VALUES (?, ?, ?)", "TEST1", 100, 20)
-	testDB.Exec("INSERT INTO stock (code, invested, stock_count) VALUES (?, ?, ?)", "TEST2", 50, 10)
+	testDB.Exec("INSERT INTO stock (code, stock_count) VALUES (?, ?)", "TEST1", 20)
+	testDB.Exec("INSERT INTO stock (code, stock_count) VALUES (?, ?)", "TEST2", 10)
 
 	stock_items, err = GetStockPortfolio(testDB)
 	if err != nil {
@@ -139,8 +137,8 @@ func TestGetStockPortfolio(t *testing.T) {
 	}
 
 	expected = []StockData{
-		{Code: "TEST1", Invested: 100, Stock_count: 20},
-		{Code: "TEST2", Invested: 50, Stock_count: 10},
+		{Code: "TEST1", Stock_count: 20},
+		{Code: "TEST2", Stock_count: 10},
 	}
 
 	assert.EqualValues(t, expected, stock_items, "Stock data does not match expected values")
@@ -191,11 +189,10 @@ func TestBuyCrypto(t *testing.T) {
 	// Crypto successfuly purchased
 	type CryptoData struct {
 		Code        string  `json:"code"`
-		Invested    float64 `json:"invested"`
 		CryptoCount float64 `json:"crypto_count"`
 	}
 	var crypto_data CryptoData
-	err = testDB.QueryRow(`SELECT invested, crypto_count FROM crypto WHERE code = "TEST"`).Scan(&crypto_data.Invested, &crypto_data.CryptoCount)
+	err = testDB.QueryRow(`SELECT crypto_count FROM crypto WHERE code = "TEST"`).Scan(&crypto_data.CryptoCount)
 	if err != nil {
 		t.Fatalf("Error retrieving crypto: %v", err)
 	}
@@ -337,11 +334,10 @@ func TestBuyStock(t *testing.T) {
 	// Stock successfuly purchased
 	type StockData struct {
 		Code       string  `json:"code"`
-		Invested   float64 `json:"invested"`
 		StockCount float64 `json:"stock_count"`
 	}
 	var stock_data StockData
-	err = testDB.QueryRow(`SELECT invested, stock_count FROM stock WHERE code = "TEST"`).Scan(&stock_data.Invested, &stock_data.StockCount)
+	err = testDB.QueryRow(`SELECT stock_count FROM stock WHERE code = "TEST"`).Scan(&stock_data.StockCount)
 	if err != nil {
 		t.Fatalf("Error retrieving stock: %v", err)
 	}
